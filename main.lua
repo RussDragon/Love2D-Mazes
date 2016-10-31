@@ -6,7 +6,7 @@ TODO:
 4. Sidewinder – Done
 5. HuntandKill – Done
 6. Growing Tree (or recursive backtracker on loops) - Done
-7. Aidous-Broder – Done
+7. Aldous-Broder – Done
 
 ]]
 
@@ -32,7 +32,7 @@ function love.load(arg)
     love.window.setMode( 900, 900, windowed, false, 0 )
     window_w, window_h = love.graphics.getDimensions()
     
-    columns, rows = 5, 5
+    columns, rows = 3, 3
     ox, oy = 0, 0 -- Начальные координаты, левый верхний угол
     w, h = window_w / columns, window_h / rows
     -- w, h = 40, 40
