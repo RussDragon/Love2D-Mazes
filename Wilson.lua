@@ -16,75 +16,78 @@ function mod.createGrid (rows, columns)
 	return MazeGrid
 end
 
-function aux.shuffleTable(t)
-    for i = #t, 2, -1 do
-        local j = math.random(i)
-        t[i], t[j] = t[j], t[i]
-    end
-end
-
 function mod.createMaze(grid, x1, y1, x2, y2)
 	local unvisited_cells = (x2+1) * (y2+1) 
-	local stx, sty = math.random(x1, x2), math.random(y1, y2) -- Start point
-	local rx, ry = stx, sty -- sub-vertecies
 
 	local y, x = math.random(y1, y2), math.random(x1, x2)
 	grid[y][x].visited = true
-	print(x, y)
+	unvisited_cells = unvisited_cells - 1
+
+	local stx, sty = -1, -1
+	while true do
+		stx, sty = math.random(x1, x2), math.random(y1, y2) -- Start point
+		if grid[sty][stx].visited == false then break end
+	end
+
+	local ix, iy = stx, sty -- sub-vertecies
 
 	while unvisited_cells ~= 0 do
-		-- print(rx, ry)
-		if grid[ry][rx].visited == true then 
-			while true do
-				if stx == rx and sty == ry then 
-					local stx, sty = math.random(x1, x2), math.random(y1, y2) 
+		if grid[iy][ix].visited == true then 
+			grid[sty][stx].visited = true
+			while unvisited_cells ~= 0 do
+				if stx == ix and sty == iy then 
+					while true do
+						stx, sty = math.random(x1, x2), math.random(y1, y2) 
+						if grid[sty][stx].visited == false then break end
+					end
 					break
-				end
+				else unvisited_cells = unvisited_cells - 1 end
+
 				local dir = grid[sty][stx].dir
 				if dir == "UP" then
 				    grid[sty-1][stx].visited = true
 				    grid[sty-1][stx].bottom_wall = false
-				    unvisited_cells = unvisited_cells - 1
 				    sty = sty - 1
-				elseif dir == "DOWN" then
+				end
+				if dir == "DOWN" then
 				    grid[sty+1][stx].visited = true
 				    grid[sty][stx].bottom_wall = false
-				    unvisited_cells = unvisited_cells - 1
 				    sty = sty + 1
-				elseif dir == "LEFT" then
+				end
+				if dir == "LEFT" then
 				    grid[sty][stx-1].visited = true
 				    grid[sty][stx-1].right_wall = false
-				    unvisited_cells = unvisited_cells - 1
 				    stx = stx - 1
-				elseif dir == "RIGHT" then
+				end
+				if dir == "RIGHT" then
 				    grid[sty][stx+1].visited = true
 				    grid[sty][stx].right_wall = false
-				    unvisited_cells = unvisited_cells - 1
 				    stx = stx + 1
 				end
 			end
+			ix, iy = stx, sty
 		end
 
 		local dir = mod.dirs[math.random(1, 4)]
 		if dir == "UP" then -- UP
-			if ry-1 >= y1 then
-				grid[ry][rx].dir = "UP"
-				ry = ry-1
+			if iy-1 >= y1 then
+				grid[iy][ix].dir = "UP"
+				iy = iy - 1
 			end
 		elseif dir == "DOWN" then -- DOWN 
-			if ry+1 <= y2 then 
-				grid[ry][rx].dir = "DOWN"
-				ry = ry+1
+			if iy+1 <= y2 then 
+				grid[iy][ix].dir = "DOWN"
+				iy = iy + 1
 			end
 		elseif dir == "RIGHT" then -- RIGHT
-			if rx+1 <= x2 then
-				grid[ry][rx].dir = "RIGHT"
-				rx = rx+1
+			if ix+1 <= x2 then
+				grid[iy][ix].dir = "RIGHT"
+				ix = ix + 1
 			end
 		elseif dir == "LEFT" then -- LEFT
-			if rx-1 >= x1 then
-				grid[ry][rx].dir = "LEFT"
-				rx = rx-1
+			if ix-1 >= x1 then
+				grid[iy][ix].dir = "LEFT"
+				ix = ix - 1
 			end
 		end
 	end
