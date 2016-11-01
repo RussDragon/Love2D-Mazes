@@ -18,24 +18,23 @@ local binarytree = require("binarytree")
 local sidewinder = require("sidewinder")
 local huntandkill = require("huntandkill")
 local backtracking_search = require("backtracker_search")
-local aldous_broder = require("aldous-broder")
+local aldous_broder = require("aldous_broder")
 local wilson = require("wilson")
 
 function love.load(arg)
     if arg[#arg] == "-debug" then require("mobdebug").start() end
     love.graphics.setBackgroundColor( 255, 255, 255 )
     
-    flag = true
+    -- flag = true
     r,g,b = 1, 1, 1
-    cr, cg, cb = 0, 0, 0
 
     love.window.setMode( 900, 900, windowed, false, 0 )
     window_w, window_h = love.graphics.getDimensions()
     
-    columns, rows = 20, 20
+    columns, rows = 30, 30
     ox, oy = 0, 0 -- Начальные координаты, левый верхний угол
     w, h = window_w / columns, window_h / rows
-    -- w, h = 40, 40
+    -- w, h = 20, 20
 
     title = tostring(window_w) .. " x " .. tostring(window_h)
     love.window.setTitle(title)
@@ -46,26 +45,22 @@ function love.load(arg)
     end
 
     -- mGrid = recursivedivision.createGrid(rows, columns)
-    mGrid = backtracking.createGrid(rows, columns)
+    mGrid = recursivedivision.createGrid(rows, columns)
 
-   	-- recursivedivision.createMaze(mGrid, 0, 0, columns-1, rows-1, 4)
-   	-- backtracking.createMazeLoops(mGrid, 0, 0, columns, rows)
-   	-- backtracking.createMaze(mGrid, 0, 0, columns, rows)
+    local t1 = os.clock()
+    -- backtracking.createMaze(mGrid, 0, 0, columns, rows)
+   	recursivedivision.createMaze(mGrid, 0, 0, columns-1, rows-1, 1)
    	-- binarytree.createMaze(mGrid, 0, 0, columns-1, rows-1)
     -- sidewinder.createMaze(mGrid, 0, 0, columns-1, rows-1)
    	-- huntandkill.createMaze(mGrid, 0, 0, columns, rows)
+   	-- backtracking.createMazeLoops(mGrid, 0, 0, columns, rows)
    	-- aldous_broder.createMaze(mGrid, 0, 0, columns-1, rows-1)
-   	wilson.createMaze(mGrid, 0, 0, columns-1, rows-1)
-   	 -- end_paths = backtracking_search.findExit(mGrid, 0, 0, 0, 7, columns, rows)
-
-    -- local MazeGrid_solve = gridmaker(rows, columns)
-    -- eq.solveEQ(MazeGrid_solve, 0)
-
-    -- for i = 0, rows-1 do 
-    -- 	for j = 0, columns-1 do 
-    -- 		if MazeGrid_solve[i][j] == 2 then mGrid[i][j] = MazeGrid_solve[i][j] end
-    -- 	end
-    -- end
+   	-- wilson.createMaze(mGrid, 0, 0, columns-1, rows-1)
+   	local t2 = os.clock()
+    print(t2-t1)
+   	-- end_paths = backtracking_search.findExit(mGrid, 0, 0, 30, 30, columns, rows)
+	
+	-- recursivedivision.createAliensWritings(mGrid, 0, 0, columns-1, rows-1)
 end
 
 function love.update(dt)
@@ -84,10 +79,7 @@ function love.draw()
 	if GRID_TYPE == "squares" then -- Only for Eight Queen Problem
 		for y = 0, rows-1 do
 			for x = 0, columns-1 do
-				if mGrid[y][x] == 2 then love.graphics.setColor(255, 0, 0) 
-				else 
-					if mGrid[y][x] == 1 then love.graphics.setColor(1, 1, 1) else love.graphics.setColor(255, 255, 255) end
-				end
+				if mGrid[y][x] == 1 then love.graphics.setColor(1, 1, 1) else love.graphics.setColor(255, 255, 255) end
 				love.graphics.rectangle("fill", ox+(w*x), oy+(h*y), w, h)
 			end
 		end
@@ -96,7 +88,7 @@ function love.draw()
 			-- love.graphics.line({0, 0, 0, height})
 			for y = 0, rows-1 do
 				for x = 0, columns-1 do
-					for k, v in pairs ( vertfromwalls(ox+(w*x), oy+(h*y), mGrid[y][x]) ) do   	
+					for k, v in pairs ( vertfromwalls(ox+(w*x), oy+(h*y), mGrid[y][x]) ) do   
 						love.graphics.setColor(r,g,b)
 						love.graphics.line(v)
 					end

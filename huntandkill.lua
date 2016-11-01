@@ -86,10 +86,10 @@ function mod.createMaze(grid, x, y, x2, y2)
 						grid[ky][kx].visited = true
 						x, y = kx, ky
 							
-							if dir_ == "up" then grid[ky-1][kx].bottom_wall = false
-							elseif dir_ == "down" then grid[ky][kx].bottom_wall = false
-							elseif dir_ == "right" then grid[ky][kx].right_wall = false
-							elseif dir_ == "left" then grid[ky][kx-1].right_wall = false end
+						if dir_ == "up" then grid[ky-1][kx].bottom_wall = false
+						elseif dir_ == "down" then grid[ky][kx].bottom_wall = false
+						elseif dir_ == "right" then grid[ky][kx].right_wall = false
+						elseif dir_ == "left" then grid[ky][kx-1].right_wall = false end
 
 						dirs = aux.getUnvisited(grid, kx, ky) 
 						
@@ -104,7 +104,6 @@ function mod.createMaze(grid, x, y, x2, y2)
 		end
 
 		local dir = table.remove(dirs)
-		-- print (dir)
 		if dir then
 			if dir == "up" and grid[y-1][x].visited == false then
 				grid[y-1][x].bottom_wall = false
