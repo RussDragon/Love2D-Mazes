@@ -1,11 +1,10 @@
 local mod = {}
 local aux = {}
 
-function createGrid(rows, columns)
+function aux.createGrid(rows, columns)
 end
 
-function createMaze(grid, x1, y1, x2, y2)
-	
+function mod.createMaze(x1, y1, x2, y2, grid)
 end
 
 return mod

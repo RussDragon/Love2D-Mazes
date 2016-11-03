@@ -1,101 +1,80 @@
+
 local mod = {}
 local aux = {}
 
-mod.width = 0x1
-mod.height = 0x1
-mod.room_size = 0x1
-aux.grid = 0x1
+aux.width = false
+aux.height = false
+aux.sx = false
+aux.sy = false
+aux.grid = false
+aux.room_size = false
 
---[[
-TODO: 
-Rewrite Recursive divison and figure out with weird constants
-]]
-
-function mod.createGrid (rows, columns)
+function aux.createGrid (rows, columns)
   local MazeGrid = {}
-  local color = 0
 
-  for y = 0, rows-1 do 
+  for y = 1, rows do 
     MazeGrid[y] = {}
-    for x = 0, columns-1 do
+    for x = 1, columns do
         MazeGrid[y][x] = {bottom_wall = false, right_wall = false} -- Wall grid
     end
   end  
   return MazeGrid
 end
 
-function mod.createMaze(grid, x1, y1, x2, y2, room_size)
-  if mod.room_size == 0x1 then if room_size >= 1 then mod.room_size = room_size-2 else mod.room_size = 0 end end
-  if y2 - y1 > mod.room_size and x2 - x1 > mod.room_size then
-      if mod.width == 0x1 or mod.height == 0x1 then 
-        mod.width = x2 mod.height = y2 
-      end
+function aux.add_horizontal_wall(x1, x2, oy)
+  for x = x1, x2 do
+        aux.grid[oy][x].bottom_wall = true
+  end 
+  aux.grid[oy][math.random(x1, x2)].bottom_wall = false 
+end
+
+function aux.add_vertical_wall(y1, y2, ox)
+  for y = y1, y2 do
+      aux.grid[y][ox].right_wall = true
   end
+  aux.grid[math.random(y1, y2)][ox].right_wall = false
+end
 
-  local ox, oy = math.random(x1 + 1, x2 - 1), math.random(y1 + 1, y2 - 1)
-
-  if x2 - x1 > y2 - y1 then 
-    mod.aux.add_vertical_wall()
-  elseif x2 - x1 == y2 - y1 then
-  
-  else
-
+function aux.divide(x1, y1, x2, y2) 
+  local ratio = math.random(1, 3)
+  if x2 - x1 >= math.ceil(aux.room_size/ratio) and y2 - y1 >= math.ceil(aux.room_size/ratio) then
+    local ox, oy = math.random(x1, x2 - 1), math.random(y1, y2 - 1)
+    if x2 - x1 > y2 - y1 then 
+      aux.add_vertical_wall(y1, y2, ox)
+      aux.divide(x1, y1, ox, y2)
+      aux.divide(ox + 1, y1, x2, y2)
+    elseif x2 - x1 < y2 - y1 then
+      aux.add_horizontal_wall(x1, x2, oy)
+      aux.divide(x1, y1, x2, oy)
+      aux.divide(x1, oy + 1, x2, y2)
+    elseif x2 - x1 == y2 - y1 then
+      if math.random(0, 1) == 0 then
+        aux.add_vertical_wall(y1, y2, ox)
+        aux.divide(x1, y1, ox, y2)
+        aux.divide(ox + 1, y1, x2, y2)
+      else 
+        aux.add_horizontal_wall(x1, x2, oy)
+        aux.divide(x1, y1, x2, oy)
+        aux.divide(x1, oy + 1, x2, y2)
+      end
+    end
   end
 end
 
--- function aux.add_horizontal_wall(grid, x1, x2, ox, oy)
---   for x = x1, x2 do
---         grid[oy][x].bottom_wall = true
---   end
---   if x2+1 < mod.width then 
---   grid[oy][x2+1].bottom_wall = true
---   grid[oy][math.random(x1, x2+1)].bottom_wall = false
---     else 
---       grid[oy][math.random(x1, x2)].bottom_wall = false end
--- end
+function mod.createMaze(x1, y1, x2, y2, room_size, grid)
+  aux.grid = grid or aux.createGrid(y2, x2)
+  aux.width = x2 aux.height = y2 
+  aux.sx, aux.sy = x1, y1
 
--- function aux.add_vertical_wall(grid, y1, y2, ox, oy)
---   for y = y1, y2 do
---       grid[y][ox].right_wall = true
---   end
---   if y2+1 < mod.height then 
---   grid[y2+1][ox].right_wall = true 
---   grid[math.random(y1, y2+1)][ox].right_wall = false 
---     else 
---       grid[math.random(y1, y2)][ox].right_wall = false end
--- end
+  if room_size > 0 then 
+    aux.room_size = room_size
+  else
+    aux.room_size = 1
+  end
 
--- function mod.createMaze(grid, x1, y1, x2, y2, room_size)
---   if mod.room_size == -2 then if room_size >= 1 then mod.room_size = room_size-2 else mod.room_size = 0 end end
---     if y2 - y1 > mod.room_size and x2 - x1 > mod.room_size then
---       if mod.width == 0 or mod.height == 0 then mod.width = x2 mod.height = y2 end
-
---       local ox = math.random(x1, x2)
---       local oy = math.random(y1, y2)
-
---       if x2 - x1 > y2 - y1 then 
---         aux.add_vertical_wall(grid, y1, y2, ox, oy)
---         mod.createMaze(grid, x1, y1, ox - 1, y2)
---         mod.createMaze(grid, ox + 1, y1, x2, y2)
---         else 
---           if x2 - x1 == y2 - y1 then
---             if math.random(0,1) == 0 then
---               aux.add_horizontal_wall(grid, x1, x2, ox, oy) 
---               mod.createMaze(grid, x1, y1, x2, oy - 1)
---               mod.createMaze(grid, x1, oy + 1, x2, y2)
---             else 
---               aux.add_vertical_wall(grid, y1, y2, ox, oy)
---               mod.createMaze(grid, x1, y1, ox - 1, y2)
---               mod.createMaze(grid, ox + 1, y1, x2, y2) 
---             end
---           else 
---             aux.add_horizontal_wall(grid, x1, x2, ox, oy) 
---             mod.createMaze(grid, x1, y1, x2, oy - 1)
---             mod.createMaze(grid, x1, oy + 1, x2, y2)
---           end
---       end
---     end
--- end
+  aux.divide(x1, y1, x2, y2)
+  return aux.grid
+end
 
 -- Mystic Writing Generator, for real
 -- function mod.createGrid (rows, columns)
