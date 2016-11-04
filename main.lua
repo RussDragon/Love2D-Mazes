@@ -32,7 +32,7 @@ function love.load(arg)
   love.window.setMode( 900, 900, windowed, false, 0 )
   window_w, window_h = love.graphics.getDimensions()
   
-  columns, rows = 10, 10
+  columns, rows = 1000, 1-00
   ox, oy = 0, 0 -- Начальные координаты, левый верхний угол
   w, h = window_w / columns, window_h / rows
   -- w, h = 20, 20
@@ -52,10 +52,11 @@ function love.load(arg)
  	-- mGrid = huntandkill.createMaze(1, 1, columns, rows)
  	-- mGrid = backtracking.createMaze(1, 1, columns, rows)
  	-- mGrid = aldous_broder.createMaze(1, 1, columns, rows)
- 	-- mGrid = wilson.createMaze(1, 1, columns, rows)
- 	mGrid = prim.createMaze(1, 1, columns, rows)
+ 	mGrid = wilson.createMaze(1, 1, columns, rows)
+ 	-- mGrid = prim.createMaze(1, 1, columns, rows)
  	local t2 = os.clock()
   print(t2-t1)
+  love.event.quit()
   -- end_paths = backtracking_search.findExit(mGrid, 1, 1, 30, 30, columns, rows)
 	
 	-- recursivedivision.createAliensWritings(mGrid, 0, 0, columns-1, rows-1)
