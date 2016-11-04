@@ -1,5 +1,5 @@
 --[[
-TODO:
+Progress:
 1. Recursive Backtracker - Done
 2. Recursive Division – Done
 3. Binary Tree – Done
@@ -8,6 +8,8 @@ TODO:
 6. Growing Tree (or recursive backtracker on loops) - Done
 7. Aldous-Broder – Done
 8. Wilson – Done
+9. Prim – Done
+10. 
 ]]
 
 local GRID_TYPE = "walls" --squares --walls
@@ -19,6 +21,7 @@ local huntandkill = require("huntandkill")
 local backtracking_search = require("backtracker_search")
 local aldous_broder = require("aldous_broder")
 local wilson = require("wilson")
+local prim = require("prim")
 
 function love.load(arg)
   if arg[#arg] == "-debug" then require("mobdebug").start() end
@@ -29,7 +32,7 @@ function love.load(arg)
   love.window.setMode( 900, 900, windowed, false, 0 )
   window_w, window_h = love.graphics.getDimensions()
   
-  columns, rows = 100, 100
+  columns, rows = 10, 10
   ox, oy = 0, 0 -- Начальные координаты, левый верхний угол
   w, h = window_w / columns, window_h / rows
   -- w, h = 20, 20
@@ -50,9 +53,10 @@ function love.load(arg)
  	-- mGrid = backtracking.createMaze(1, 1, columns, rows)
  	-- mGrid = aldous_broder.createMaze(1, 1, columns, rows)
  	-- mGrid = wilson.createMaze(1, 1, columns, rows)
+ 	mGrid = prim.createMaze(1, 1, columns, rows)
  	local t2 = os.clock()
   print(t2-t1)
-   -- end_paths = backtracking_search.findExit(mGrid, 1, 1, 30, 30, columns, rows)
+  -- end_paths = backtracking_search.findExit(mGrid, 1, 1, 30, 30, columns, rows)
 	
 	-- recursivedivision.createAliensWritings(mGrid, 0, 0, columns-1, rows-1)
 end

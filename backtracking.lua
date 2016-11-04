@@ -7,6 +7,7 @@ aux.height = false
 aux.grid = false
 aux.sy = false
 aux.sx = false
+aux.stack = {}
 
 function aux.createGrid (rows, columns)
 	local MazeGrid = {}
@@ -98,7 +99,6 @@ end
 
 function aux.LoopsMaze()
 	local dirs = {}
-	local stack = {}
 
 	local x, y = aux.sx, aux.sy
 	while true do
@@ -108,12 +108,12 @@ function aux.LoopsMaze()
 		if #aux.getUnvisited(x, y) ~= 0 then
 			dirs = aux.getUnvisited(x, y)
 			if #aux.getUnvisited(x, y) > 1 then 
-				table.insert(stack, {x = x, y = y})
+				table.insert(aux.stack, {x = x, y = y})
 			end
 		else
-			if #stack ~= 0 then
-				while #stack ~= 0 do 
-					local value = table.remove(stack)
+			if #aux.stack ~= 0 then
+				while #aux.stack ~= 0 do 
+					local value = table.remove(aux.stack)
 					x, y = value.x, value.y
 					if #aux.getUnvisited(x, y) ~= 0 then
 						dirs = aux.getUnvisited(x, y)
