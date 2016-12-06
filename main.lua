@@ -9,7 +9,8 @@ Progress:
 7. Aldous-Broder – Done
 8. Wilson – Done
 9. Prim – Done
-10. 
+10. Kruskal – Done
+11. Eller – WIP
 ]]
 
 local GRID_TYPE = "walls" --squares --walls
@@ -22,6 +23,8 @@ local backtracking_search = require("backtracker_search")
 local aldous_broder = require("aldous_broder")
 local wilson = require("wilson")
 local prim = require("prim")
+local kruskal = require("kruskal")
+local eller = require("eller")
 
 function love.load(arg)
   if arg[#arg] == "-debug" then require("mobdebug").start() end
@@ -32,7 +35,7 @@ function love.load(arg)
   love.window.setMode( 900, 900, windowed, false, 0 )
   window_w, window_h = love.graphics.getDimensions()
   
-  columns, rows = 1000, 1-00
+  columns, rows = 10, 10
   ox, oy = 0, 0 -- Начальные координаты, левый верхний угол
   w, h = window_w / columns, window_h / rows
   -- w, h = 20, 20
@@ -47,16 +50,18 @@ function love.load(arg)
 
   local t1 = os.clock()
  	-- mGrid = recursivedivision.createMaze(1, 1, columns, rows, 9)
- 	-- mGrid = bisnarytree.createMaze(1, 1, columns, rows)
+ 	-- mGrid = binarytree.createMaze(1, 1, columns, rows)
   -- mGrid = sidewinder.createMaze(1, 1, columns, rows)
  	-- mGrid = huntandkill.createMaze(1, 1, columns, rows)
  	-- mGrid = backtracking.createMaze(1, 1, columns, rows)
  	-- mGrid = aldous_broder.createMaze(1, 1, columns, rows)
- 	mGrid = wilson.createMaze(1, 1, columns, rows)
+ 	-- mGrid = wilson.createMaze(1, 1, columns, rows)
  	-- mGrid = prim.createMaze(1, 1, columns, rows)
+ 	-- mGrid = kruskal.createMaze(1, 1, columns, rows)
+ 		mGrid = eller.createMaze(1, 1, columns, rows)
  	local t2 = os.clock()
   print(t2-t1)
-  love.event.quit()
+  -- love.event.quit()
   -- end_paths = backtracking_search.findExit(mGrid, 1, 1, 30, 30, columns, rows)
 	
 	-- recursivedivision.createAliensWritings(mGrid, 0, 0, columns-1, rows-1)

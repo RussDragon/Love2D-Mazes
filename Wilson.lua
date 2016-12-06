@@ -6,7 +6,6 @@ aux.height = false
 aux.sx = false
 aux.sy = false
 aux.grid = false
-aux.CellsHash = {}
 
 aux.dirs = {"UP", "DOWN", "LEFT", "RIGHT"}
 
@@ -103,48 +102,44 @@ end
 -- 	end
 -- end
 
-function aux.hashValue(x, y)
-return x * aux.height + (y-1)
+function aux.hashKey(x, y)
+	return x * aux.height + (y - 1)
 end
 
 function aux.deHashKey(value)
-return math.floor(value/aux.height), value%aux.height + 1
+	return math.floor(value/aux.height), value%aux.height + 1
 end
 
-function aux.shuffleTable(t)
-    for i = #t, 2, -1 do
-        local j = math.random(i)
-        t[i], t[j] = t[j], t[i]
-    end
-end
-
-function aux.hashCells()
-	for yk, yv in pairs(aux.grid) do
+function aux.hashCells(grid)
+	local vtable = {}
+	for yk, yv in pairs(grid) do
 		for xk, xv in pairs(yv) do
-			if xv.visited == false then 
-				aux.CellsHash[aux.hashValue(xk, yk)] = true
+			if xv.visited == false then
+				vtable[aux.hashKey(xk, yk)] = xv -- Добавляем только ссылки, не занимаем память, профит (?)
 			end
 		end
 	end
+	return vtable
 end
+
+-- Dirs optimized
 
 -- function aux.wilson()
 -- 	local unvisited_cells = aux.width * aux.height
 -- 	local dirsStack = {}
 -- 	local dirsHash = {}
+-- 	local CellsHash = aux.hashCells(aux.grid)
 
--- 	aux.hashCells()
-
--- 	local key = next(aux.CellsHash, nil)
+-- 	local key = next(CellsHash, nil)
 -- 	local vx, vy = aux.deHashKey(key)
--- 	aux.CellsHash[key] = nil
+-- 	CellsHash[key] = nil
 -- 	aux.grid[vy][vx].visited = true
 	
 -- 	unvisited_cells = unvisited_cells - 1
 
--- 	key = next(aux.CellsHash, nil)
+-- 	key = next(CellsHash, nil)
 -- 	vx, vy = aux.deHashKey(key)
--- 	aux.CellsHash[key] = nil
+-- 	CellsHash[key] = nil
 	
 -- 	local stx, sty = vx, vy
 
@@ -153,12 +148,12 @@ end
 -- 	while unvisited_cells ~= 0 do
 -- 		if aux.grid[iy][ix].visited == true then 
 -- 			aux.grid[sty][stx].visited = true
--- 			aux.CellsHash[aux.hashValue(stx, sty)] = nil
+-- 			CellsHash[aux.hashKey(stx, sty)] = nil
 -- 			while unvisited_cells ~= 0 do
 -- 				if stx == ix and sty == iy then 
--- 					key = next(aux.CellsHash, nil)
+-- 					key = next(CellsHash, nil)
 -- 					vx, vy = aux.deHashKey(key)
--- 					aux.CellsHash[key] = nil
+-- 					CellsHash[key] = nil
 
 -- 					stx, sty = vx, vy
 
@@ -169,27 +164,24 @@ end
 
 -- 				for i = 1, #dirsStack do
 -- 					unvisited_cells = unvisited_cells - 1
--- 					-- print(stx, sty, i)
--- 					-- print(unvisited_cells)
---           -- local dir = dirsStack[i]
--- 					if dirsStack[i] == "UP" then
+-- 					if dirsStack[i].dir == "UP" then
 -- 					    aux.grid[sty-1][stx].visited = true
--- 							aux.CellsHash[aux.hashValue(stx, sty-1)] = nil
+-- 							CellsHash[aux.hashKey(stx, sty-1)] = nil
 -- 					    aux.grid[sty-1][stx].bottom_wall = false
 -- 					    sty = sty - 1
--- 					elseif dirsStack[i] == "DOWN" then
+-- 					elseif dirsStack[i].dir == "DOWN" then
 -- 					    aux.grid[sty+1][stx].visited = true
--- 					    aux.CellsHash[aux.hashValue(stx, sty+1)] = nil
+-- 					    CellsHash[aux.hashKey(stx, sty+1)] = nil
 -- 					    aux.grid[sty][stx].bottom_wall = false
 -- 					    sty = sty + 1
--- 					elseif dirsStack[i] == "LEFT" then
+-- 					elseif dirsStack[i].dir == "LEFT" then
 -- 					    aux.grid[sty][stx-1].visited = true
--- 					    aux.CellsHash[aux.hashValue(stx-1, sty)] = nil
+-- 					    CellsHash[aux.hashKey(stx-1, sty)] = nil
 -- 					    aux.grid[sty][stx-1].right_wall = false
 -- 					    stx = stx - 1
--- 					elseif dirsStack[i] == "RIGHT" then
+-- 					elseif dirsStack[i].dir == "RIGHT" then
 -- 					    aux.grid[sty][stx+1].visited = true
--- 					    aux.CellsHash[aux.hashValue(stx+1, sty)] = nil
+-- 					    CellsHash[aux.hashKey(stx+1, sty)] = nil
 -- 					    aux.grid[sty][stx].right_wall = false
 -- 					    stx = stx + 1
 -- 					end
@@ -199,15 +191,16 @@ end
 -- 		end
 
 -- 		local dir = aux.dirs[math.random(1, 4)]
--- 		key = aux.hashValue(ix, iy)
+-- 		key = aux.hashKey(ix, iy)
 
 -- 		if dir == "UP" then 
 -- 			if iy-1 >= aux.sy then
 -- 				if not dirsHash[key] then
--- 					dirsStack[#dirsStack+1] = "UP"
+-- 					dirsStack[#dirsStack+1] = {dir = "UP", ref = key}
 -- 					dirsHash[key] = #dirsStack
--- 				else dirsStack[dirsHash[key]] = "UP" 
--- 					for i = #dirsStack, dirsHash[key]+1, -1 do
+-- 				else dirsStack[dirsHash[key]].dir = "UP"
+-- 					for i = dirsHash[key]+1, #dirsStack do
+-- 						dirsHash[dirsStack[i].ref] = nil
 -- 						dirsStack[i] = nil
 -- 					end
 -- 				end
@@ -216,10 +209,11 @@ end
 -- 		elseif dir == "DOWN" then 
 -- 			if iy+1 <= aux.height then 
 -- 				if not dirsHash[key] then 
--- 					dirsStack[#dirsStack+1] = "DOWN"
+-- 					dirsStack[#dirsStack+1] = {dir = "DOWN", ref = key}
 -- 					dirsHash[key] = #dirsStack
--- 				else dirsStack[dirsHash[key]] = "DOWN" 
--- 					for i = #dirsStack, dirsHash[key]+1, -1 do
+-- 				else dirsStack[dirsHash[key]].dir = "DOWN" 
+-- 					for i = dirsHash[key]+1, #dirsStack do
+-- 						dirsHash[dirsStack[i].ref] = nil
 -- 						dirsStack[i] = nil
 -- 					end
 -- 				end
@@ -228,10 +222,11 @@ end
 -- 		elseif dir == "RIGHT" then 
 -- 			if ix+1 <= aux.width then
 -- 				if not dirsHash[key] then 
--- 					dirsStack[#dirsStack+1] = "RIGHT"
+-- 					dirsStack[#dirsStack+1] = {dir = "RIGHT", ref = key}
 -- 					dirsHash[key] = #dirsStack
--- 				else dirsStack[dirsHash[key]] = "RIGHT" 
--- 					for i = #dirsStack, dirsHash[key]+1, -1 do
+-- 				else dirsStack[dirsHash[key]].dir = "RIGHT" 
+-- 					for i = dirsHash[key]+1, #dirsStack do
+-- 						dirsHash[dirsStack[i].ref] = nil
 -- 						dirsStack[i] = nil
 -- 					end
 -- 				end
@@ -239,11 +234,12 @@ end
 -- 			end
 -- 		elseif dir == "LEFT" then 
 -- 			if ix-1 >= aux.sx then
--- 				if not dirsHash[key] then 
--- 					dirsStack[#dirsStack+1] = "LEFT"
+-- 				if not dirsHash[key] then
+-- 					dirsStack[#dirsStack+1] = {dir = "LEFT", ref = key}
 -- 					dirsHash[key] = #dirsStack
--- 				else dirsStack[dirsHash[key]] = "LEFT" 
--- 					for i = #dirsStack, dirsHash[key]+1, -1 do
+-- 				else dirsStack[dirsHash[key]].dir = "LEFT" 
+-- 					for i = dirsHash[key]+1, #dirsStack do
+-- 						dirsHash[dirsStack[i].ref] = nil
 -- 						dirsStack[i] = nil
 -- 					end
 -- 				end
@@ -253,23 +249,21 @@ end
 -- 	end
 -- end
 
+-- Optimized Wilson algorithm with hash-table
+
 function aux.wilson()
 	local unvisited_cells = aux.width * aux.height
-	local dirsStack = {}
-	local dirsHash = {}
-
-	aux.hashCells()
-
-	local key = next(aux.CellsHash, nil)
+	local CellsHash = aux.hashCells(aux.grid)
+	local key = next(CellsHash, key)
 	local vx, vy = aux.deHashKey(key)
-	aux.CellsHash[key] = nil
+	CellsHash[key] = nil
 	aux.grid[vy][vx].visited = true
 	
 	unvisited_cells = unvisited_cells - 1
 
-	key = next(aux.CellsHash, nil)
+	key = next(CellsHash, key)
 	vx, vy = aux.deHashKey(key)
-	aux.CellsHash[key] = nil
+	CellsHash[key] = nil
 	
 	local stx, sty = vx, vy
 
@@ -278,39 +272,36 @@ function aux.wilson()
 	while unvisited_cells ~= 0 do
 		if aux.grid[iy][ix].visited == true then 
 			aux.grid[sty][stx].visited = true
-			aux.CellsHash[aux.hashValue(stx, sty)] = nil
+			CellsHash[aux.hashKey(stx, sty)] = nil
 			while unvisited_cells ~= 0 do
 				if stx == ix and sty == iy then 
-					key = next(aux.CellsHash, nil)
+					key = next(CellsHash, key)
 					vx, vy = aux.deHashKey(key)
-					aux.CellsHash[key] = nil
+					CellsHash[key] = nil
 
 					stx, sty = vx, vy
-
-					dirsStack = {}
-					dirsHash = {}
 					break
 				else unvisited_cells = unvisited_cells - 1 end
 
 				local dir = aux.grid[sty][stx].dir
 				if dir == "UP" then
 				    aux.grid[sty-1][stx].visited = true
-						aux.CellsHash[aux.hashValue(stx, sty-1)] = nil
+						CellsHash[aux.hashKey(stx, sty-1)] = nil
 				    aux.grid[sty-1][stx].bottom_wall = false
 				    sty = sty - 1
 				elseif dir == "DOWN" then
 				    aux.grid[sty+1][stx].visited = true
-				    aux.CellsHash[aux.hashValue(stx, sty+1)] = nil
+				    CellsHash[aux.hashKey(stx, sty+1)] = nil
 				    aux.grid[sty][stx].bottom_wall = false
 				    sty = sty + 1
 				elseif dir == "LEFT" then
 				    aux.grid[sty][stx-1].visited = true
-				    aux.CellsHash[aux.hashValue(stx-1, sty)] = nil
+				    CellsHash[aux.hashKey(stx-1, sty)] = nil
 				    aux.grid[sty][stx-1].right_wall = false
 				    stx = stx - 1
 				elseif dir == "RIGHT" then
 				    aux.grid[sty][stx+1].visited = true
-				    aux.CellsHash[aux.hashValue(stx+1, sty)] = nil
+				    CellsHash[aux.hashKey(stx+1, sty)] = nil
 				    aux.grid[sty][stx].right_wall = false
 				    stx = stx + 1
 				end

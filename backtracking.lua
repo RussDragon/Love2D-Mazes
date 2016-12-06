@@ -102,7 +102,6 @@ function aux.LoopsMaze()
 
 	local x, y = aux.sx, aux.sy
 	while true do
-		print(x, y)
 		aux.grid[y][x].visited = true
 		
 		if #aux.getUnvisited(x, y) ~= 0 then

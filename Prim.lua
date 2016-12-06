@@ -36,11 +36,11 @@ function aux.shuffleTable(t)
 end
 
 function aux.hashValue(x, y)
-return x * 10 + y
+	return x * aux.height + (y - 1)
 end
 
 function aux.deHashKey(value)
-return math.floor(value/10), value%10
+	return math.floor(value/aux.height), value%aux.height + 1
 end
 
 function aux.getVisited(x, y)
@@ -62,8 +62,7 @@ function aux.getVisited(x, y)
 		dirs[#dirs+1] = "LEFT"
 	end
 
-	aux.shuffleTable(dirs)
-	return dirs[1]
+	return dirs[math.random(1, #dirs)]
 end
 
 function aux.updateFront(x, y)
@@ -89,7 +88,7 @@ function aux.updateFront(x, y)
 		aux.front[#aux.front+1] = {x = x - 1, y = y}
 	end
 
-	aux.shuffleTable(aux.front)
+	-- aux.shuffleTable(aux.front)
 end
 
 function aux.prim()
@@ -99,8 +98,11 @@ function aux.prim()
 	aux.updateFront(ix, iy)
 
 	while #aux.front ~= 0 do
-		local value = table.remove(aux.front)
+		local value = table.remove(aux.front, math.random(1, #aux.front))
 		ix, iy = value.x, value.y
+		aux.grid[iy][ix].visited = true
+		aux.frontHash[aux.hashValue(ix, iy)] = nil
+		aux.updateFront(ix, iy)
 
 		local dir = aux.getVisited(ix, iy)
 		if dir == "UP" then
@@ -112,10 +114,6 @@ function aux.prim()
 		elseif dir == "RIGHT" then
 			aux.grid[iy][ix].right_wall = false
 		end
-
-		aux.grid[iy][ix].visited = true
-		aux.frontHash[aux.hashValue(ix, iy)] = nil
-		aux.updateFront(ix, iy)
 	end
 end
 
