@@ -10,7 +10,7 @@ Progress:
 8. Wilson – Done
 9. Prim – Done
 10. Kruskal – Done
-11. Eller – WIP
+11. Eller – Done
 ]]
 
 local GRID_TYPE = "walls" --squares --walls
@@ -30,12 +30,12 @@ function love.load(arg)
   if arg[#arg] == "-debug" then require("mobdebug").start() end
   love.graphics.setBackgroundColor( 255, 255, 255 )
   
-  r,g,b = 1, 1, 1
+  r,g,b = 1 , 1, 1
 
   love.window.setMode( 900, 900, windowed, false, 0 )
   window_w, window_h = love.graphics.getDimensions()
   
-  columns, rows = 10, 10
+  columns, rows = 30, 30
   ox, oy = 0, 0 -- Начальные координаты, левый верхний угол
   w, h = window_w / columns, window_h / rows
   -- w, h = 20, 20
@@ -56,18 +56,30 @@ function love.load(arg)
  	-- mGrid = backtracking.createMaze(1, 1, columns, rows)
  	-- mGrid = aldous_broder.createMaze(1, 1, columns, rows)
  	-- mGrid = wilson.createMaze(1, 1, columns, rows)
- 	-- mGrid = prim.createMaze(1, 1, columns, rows)
+ 	mGrid = prim.createMaze(1, 1, columns, rows)
  	-- mGrid = kruskal.createMaze(1, 1, columns, rows)
- 		mGrid = eller.createMaze(1, 1, columns, rows)
+ 	-- mGrid = eller.createMaze(1, 1, columns, rows)
  	local t2 = os.clock()
   print(t2-t1)
+
+  tt = {}
+  local adds = 0
+  for i = 1, rows*columns do 
+  		tt[i] = adds
+  		adds = adds + 0.1
+  		if adds == 255 then adds = 0 end
+  end
+
   -- love.event.quit()
   -- end_paths = backtracking_search.findExit(mGrid, 1, 1, 30, 30, columns, rows)
 	
 	-- recursivedivision.createAliensWritings(mGrid, 0, 0, columns-1, rows-1)
 end
 
+CONTROL = 0
 function love.update(dt)
+	-- love.timer.sleep(0)
+	if CONTROL ~= columns*rows+columns then CONTROL = CONTROL + 1 end
 end
 
 local function vertfromwalls(x, y, t)
@@ -90,10 +102,19 @@ function love.draw()
 	else -- Uses for all mazes
 		if GRID_TYPE == "walls" then
 			-- love.graphics.line({0, 0, 0, height})
+			--[[ local SOMEVARY
+			if CONTROL <= columns*rows then SOMEVARY = math.floor(CONTROL/rows) else SOMEVARY = columns end 
+			if y == 0 then y = 1 end --]]
 			for y = 1, rows do
+				--[[ local temp = math.floor((CONTROL - y*rows)/rows)
+				if temp >= 1 then SOMEVARX = columns else SOMEVARX = CONTROL%rows end --]]
 				for x = 1, columns do
 					-- love.graphics.setColor(0,255,0) love.graphics.rectangle("fill", ox+w*3/8+w*x, oy+h*3/8+h*y, w*2/8, h*2/8)
+					-- r, g, b = tt[(y-1)*rows+x], 0, 0
+					-- love.graphics.setColor(r,g,b)
+					-- love.graphics.rectangle("fill", ox+(w*(x-1)), oy+(h*(y-1)), w, h)
 					for k, v in pairs ( vertfromwalls(ox+(w*(x-1)), oy+(h*(y-1)), mGrid[y][x]) ) do
+						-- r, g, b = 0, 255, 0
 						love.graphics.setColor(r,g,b)
 						love.graphics.line(v)
 					end

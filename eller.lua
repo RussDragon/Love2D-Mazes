@@ -42,16 +42,61 @@ function aux.eller()
 
 	for y = 1, aux.height do 
 		for x = 1, aux.width do
-			sets[aux.grid[y][x].set] = {}
-			table.insert(sets[aux.grid[y][x].set], {x = x, y = y})
+			if sets[aux.grid[y][x].set] and #sets[aux.grid[y][x].set] >= 1 then
+				table.insert(sets[aux.grid[y][x].set], {x = x, y = y})
+				aux.grid[y][x].setalloc = #sets[aux.grid[y][x].set]
+			else
+				sets[aux.grid[y][x].set] = {}
+				table.insert(sets[aux.grid[y][x].set], {x = x, y = y})
+				aux.grid[y][x].setalloc = #sets[aux.grid[y][x].set]
+			end
 		end
+
+		for y, vy in pairs(aux.grid) do
+			for x, vx in pairs(vy) do
+				io.write(vx.set, " ")
+			end
+			io.write('\n')
+		end
+		print()
+
 
 		for x = 1, aux.width-1 do
 			if y == aux.height then
-				sets[aux.grid[y][x+1].set] = nil
+				if aux.grid[y][x].set ~= aux.grid[y][x+1].set then
+					aux.grid[y][x].right_wall = false
+				end
+			elseif math.random(0, 1) == 1 and aux.grid[y][x].set ~= aux.grid[y][x+1].set then 
+				aux.grid[y][x].right_wall = false
+				
+				table.insert(sets[aux.grid[y][x].set], {x = x + 1, y = y})
+				-- print(#sets[aux.grid[y][x+1].set])
+				print(aux.grid[y][x].set, x)
+				if #sets[aux.grid[y][x+1].set] > 1 then 
+					sets[aux.grid[y][x+1].set][aux.grid[y][x+1].setalloc] = sets[aux.grid[y][x+1].set][#sets[aux.grid[y][x+1].set]]
+					sets[aux.grid[y][x+1].set][#sets[aux.grid[y][x+1].set]] = nil
+				else 
+					print("SET: ", aux.grid[y][x+1].set, " DELETED")
+					sets[aux.grid[y][x+1].set] = nil
+				end
+
 				aux.grid[y][x+1].set = aux.grid[y][x].set
 			end
+		end
 
+		if y+1 <= aux.height then
+			for k, v in pairs(sets) do
+				local value = v[math.random(1, #v)]
+				aux.grid[value.y][value.x].bottom_wall = false
+				aux.grid[value.y+1][value.x].set = aux.grid[value.y][value.x].set
+
+				for _, vi in pairs(v) do
+					if math.random(0, 1) == 1 and aux.grid[vi.y][vi.x].bottom_wall then
+						aux.grid[vi.y][vi.x].bottom_wall = false
+						aux.grid[vi.y+1][vi.x].set = aux.grid[vi.y][vi.x].set
+					end
+				end
+			end
 		end
 		sets = {}
 	end
