@@ -92,20 +92,20 @@ function aux.dijkstra()
 		for _, v in pairs(front) do
 			if v == "UP" and iy - 1 >= aux.oy then
 				aux.matrice[iy - 1][ix].distance = aux.matrice[iy][ix].distance + 1
-				aux.matrice[iy - 1][ix].b = aux.matrice[iy][ix].b - 0.00075
-				-- aux.matrice[iy - 1][ix].r = aux.matrice[iy][ix].r + 0.00055
+				aux.matrice[iy - 1][ix].b = aux.matrice[iy][ix].b - 0.065
+				aux.matrice[iy - 1][ix].r = aux.matrice[iy][ix].r + 0.065
 			elseif v == "DOWN" and iy + 1 <= aux.height then 
 				aux.matrice[iy + 1][ix].distance = aux.matrice[iy][ix].distance + 1
-				aux.matrice[iy + 1][ix].b = aux.matrice[iy][ix].b - 0.00075
-				-- aux.matrice[iy + 1][ix].r = aux.matrice[iy][ix].r + 0.00055
+				aux.matrice[iy + 1][ix].b = aux.matrice[iy][ix].b - 0.065
+				aux.matrice[iy + 1][ix].r = aux.matrice[iy][ix].r + 0.065
 			elseif v == "RIGHT" and ix + 1 <= aux.width then 
 				aux.matrice[iy][ix + 1].distance = aux.matrice[iy][ix].distance + 1
-				aux.matrice[iy][ix + 1].b = aux.matrice[iy][ix].b - 0.00075
-				-- aux.matrice[iy][ix + 1].r = aux.matrice[iy][ix].r + 0.00055
+				aux.matrice[iy][ix + 1].b = aux.matrice[iy][ix].b - 0.065
+				aux.matrice[iy][ix + 1].r = aux.matrice[iy][ix].r + 0.065
 			elseif v == "LEFT" and ix - 1 >= aux.ox then 
 				aux.matrice[iy][ix - 1].distance = aux.matrice[iy][ix].distance + 1
-				aux.matrice[iy][ix - 1].b = aux.matrice[iy][ix].b - 0.00075
-				-- aux.matrice[iy][ix - 1].r = aux.matrice[iy][ix].r + 0.00055
+				aux.matrice[iy][ix - 1].b = aux.matrice[iy][ix].b - 0.065
+				aux.matrice[iy][ix - 1].r = aux.matrice[iy][ix].r + 0.065
 			end
 		end
 
