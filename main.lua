@@ -10,7 +10,7 @@ Progress:
 8. Wilson – Done
 9. Prim – Done
 10. Kruskal – Done
-11. Eller – Done
+11. Eller – WIP
 ]]
 
 local GRID_TYPE = "walls" --squares --walls
@@ -25,17 +25,18 @@ local wilson = require("wilson")
 local prim = require("prim")
 local kruskal = require("kruskal")
 local eller = require("eller")
+local dijkstra = require("dijkstra")
 
 function love.load(arg)
   if arg[#arg] == "-debug" then require("mobdebug").start() end
   love.graphics.setBackgroundColor( 255, 255, 255 )
   
-  r,g,b = 1 , 1, 1
+  r,g,b = 1, 1, 1
 
   love.window.setMode( 900, 900, windowed, false, 0 )
   window_w, window_h = love.graphics.getDimensions()
   
-  columns, rows = 30, 30
+  columns, rows = 100, 100
   ox, oy = 0, 0 -- Начальные координаты, левый верхний угол
   w, h = window_w / columns, window_h / rows
   -- w, h = 20, 20
@@ -49,21 +50,23 @@ function love.load(arg)
   end
 
   local t1 = os.clock()
- 	-- mGrid = recursivedivision.createMaze(1, 1, columns, rows, 9)
+ 	-- mGrid = recursivedivision.createMaze(1, 1, columns, rows, 1)
  	-- mGrid = binarytree.createMaze(1, 1, columns, rows)
   -- mGrid = sidewinder.createMaze(1, 1, columns, rows)
  	-- mGrid = huntandkill.createMaze(1, 1, columns, rows)
- 	-- mGrid = backtracking.createMaze(1, 1, columns, rows)
+ 	mGrid = backtracking.createMaze(1, 1, columns, rows)
  	-- mGrid = aldous_broder.createMaze(1, 1, columns, rows)
  	-- mGrid = wilson.createMaze(1, 1, columns, rows)
- 	mGrid = prim.createMaze(1, 1, columns, rows)
+ 	-- mGrid = prim.createMaze(1, 1, columns, rows)
  	-- mGrid = kruskal.createMaze(1, 1, columns, rows)
  	-- mGrid = eller.createMaze(1, 1, columns, rows)
  	local t2 = os.clock()
   print(t2-t1)
 
+  mat = dijkstra.generateMatrice(1, 1, columns, rows, mGrid)
+
   tt = {}
-  local adds = 0
+  local adds = 100
   for i = 1, rows*columns do 
   		tt[i] = adds
   		adds = adds + 0.1
@@ -110,12 +113,15 @@ function love.draw()
 				if temp >= 1 then SOMEVARX = columns else SOMEVARX = CONTROL%rows end --]]
 				for x = 1, columns do
 					-- love.graphics.setColor(0,255,0) love.graphics.rectangle("fill", ox+w*3/8+w*x, oy+h*3/8+h*y, w*2/8, h*2/8)
-					-- r, g, b = tt[(y-1)*rows+x], 0, 0
-					-- love.graphics.setColor(r,g,b)
-					-- love.graphics.rectangle("fill", ox+(w*(x-1)), oy+(h*(y-1)), w, h)
+					-- r, g, b = 1, 1, 1
+					r, g, b = 0, 0, mat[y][x]
+					love.graphics.setColor(r,g,b, 240)
+					love.graphics.rectangle("fill", ox+(w*(x-1)), oy+(h*(y-1)), w, h)
 					for k, v in pairs ( vertfromwalls(ox+(w*(x-1)), oy+(h*(y-1)), mGrid[y][x]) ) do
-						-- r, g, b = 0, 255, 0
+						r, g, b = 1, 1, 1
+						-- r, g, b = tt[(y-1)*rows+x], 0, 0
 						love.graphics.setColor(r,g,b)
+						love.graphics.setLineWidth(2)
 						love.graphics.line(v)
 					end
 					-- for k, v in pairs(end_paths) do love.graphics.setColor(0,255,0) love.graphics.rectangle("fill", ox+w*3/8+w*v.x, oy+h*3/8+h*v.y, w*2/8, h*2/8) end

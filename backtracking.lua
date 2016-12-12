@@ -56,8 +56,8 @@ function mod.createMaze(x1, y1, x2, y2, grid)
 		aux.grid = grid or aux.createGrid(y2, x2)
 		aux.sx, aux.sy = x1, y1
 
-		-- aux.LoopsMaze()
-		aux.backtrackingMaze(aux.sx, aux.sy)
+		aux.LoopsMaze()
+		-- aux.backtrackingMaze(aux.sx, aux.sy)
 		return aux.grid
 end
 

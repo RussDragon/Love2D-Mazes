@@ -52,15 +52,6 @@ function aux.eller()
 			end
 		end
 
-		for y, vy in pairs(aux.grid) do
-			for x, vx in pairs(vy) do
-				io.write(vx.set, " ")
-			end
-			io.write('\n')
-		end
-		print()
-
-
 		for x = 1, aux.width-1 do
 			if y == aux.height then
 				if aux.grid[y][x].set ~= aux.grid[y][x+1].set then
@@ -71,12 +62,10 @@ function aux.eller()
 				
 				table.insert(sets[aux.grid[y][x].set], {x = x + 1, y = y})
 				-- print(#sets[aux.grid[y][x+1].set])
-				print(aux.grid[y][x].set, x)
 				if #sets[aux.grid[y][x+1].set] > 1 then 
 					sets[aux.grid[y][x+1].set][aux.grid[y][x+1].setalloc] = sets[aux.grid[y][x+1].set][#sets[aux.grid[y][x+1].set]]
 					sets[aux.grid[y][x+1].set][#sets[aux.grid[y][x+1].set]] = nil
 				else 
-					print("SET: ", aux.grid[y][x+1].set, " DELETED")
 					sets[aux.grid[y][x+1].set] = nil
 				end
 
