@@ -13,7 +13,7 @@ function aux.createGrid (rows, columns)
 	for y = 1, rows do 
 		MazeGrid[y] = {}
 		for x = 1, columns do
-			MazeGrid[y][x] = {visited = false, bottom_wall = true, right_wall = true, set = -1} -- Wall grid
+			MazeGrid[y][x] = {bottom_wall = true, right_wall = true, set = -1} -- Wall grid
 		end
 	end  
 	return MazeGrid
