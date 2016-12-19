@@ -1,4 +1,3 @@
-
 local mod = {}
 local aux = {}
 
@@ -8,6 +7,7 @@ aux.grid = false
 aux.sy = false
 aux.sx = false
 aux.stack = {}
+-- aux.changes = {}
 
 function aux.createGrid (rows, columns)
 	local MazeGrid = {}
@@ -58,7 +58,18 @@ function mod.createMaze(x1, y1, x2, y2, grid)
 
 		aux.LoopsMaze()
 		-- aux.backtrackingMaze(aux.sx, aux.sy)
-		return aux.grid
+		return aux.grid--, aux.changes
+end
+
+local function saveGridState()
+	local temp = {}
+	for yk, yv in pairs(aux.grid) do
+		temp[yk] = {}
+		for xk, xv in pairs(yv) do 
+			temp[yk][xk] = {bottom_wall = aux.grid[yk][xk].bottom_wall, right_wall = aux.grid[yk][xk].right_wall}
+		end
+	end
+	return temp
 end
 
 function aux.backtrackingMaze(x, y)
@@ -100,6 +111,7 @@ end
 function aux.LoopsMaze()
 	local dirs = {}
 
+	-- table.insert(aux.changes, saveGridState())
 	local x, y = aux.sx, aux.sy
 	while true do
 		aux.grid[y][x].visited = true
@@ -139,6 +151,7 @@ function aux.LoopsMaze()
 			aux.grid[y][x].right_wall = false
 			y, x = y, x + 1
 		end
+		-- table.insert(aux.changes, saveGridState())
 	end
 end
 

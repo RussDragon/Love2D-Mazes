@@ -7,6 +7,7 @@ aux.sx = false
 aux.sy = false
 aux.grid = false
 aux.room_size = false
+-- aux.changes = {}
 
 function aux.createGrid (rows, columns)
   local MazeGrid = {}
@@ -34,25 +35,41 @@ function aux.add_vertical_wall(y1, y2, ox)
   aux.grid[math.random(y1, y2)][ox].right_wall = false
 end
 
+local function saveGridState()
+  local temp = {}
+  for yk, yv in pairs(aux.grid) do
+    temp[yk] = {}
+    for xk, xv in pairs(yv) do 
+      temp[yk][xk] = {bottom_wall = aux.grid[yk][xk].bottom_wall, right_wall = aux.grid[yk][xk].right_wall}
+    end
+  end
+  return temp
+end
+
 function aux.divide(x1, y1, x2, y2) 
+  -- table.insert(aux.changes, saveGridState())
   local ratio = math.random(1, 3)
   if x2 - x1 >= math.ceil(aux.room_size/ratio) and y2 - y1 >= math.ceil(aux.room_size/ratio) then
     local ox, oy = math.random(x1, x2 - 1), math.random(y1, y2 - 1)
     if x2 - x1 > y2 - y1 then 
       aux.add_vertical_wall(y1, y2, ox)
+      -- table.insert(aux.changes, saveGridState())
       aux.divide(x1, y1, ox, y2)
       aux.divide(ox + 1, y1, x2, y2)
     elseif x2 - x1 < y2 - y1 then
       aux.add_horizontal_wall(x1, x2, oy)
+      -- table.insert(aux.changes, saveGridState())
       aux.divide(x1, y1, x2, oy)
       aux.divide(x1, oy + 1, x2, y2)
     elseif x2 - x1 == y2 - y1 then
       if math.random(0, 1) == 0 then
         aux.add_vertical_wall(y1, y2, ox)
+        -- table.insert(aux.changes, saveGridState())
         aux.divide(x1, y1, ox, y2)
         aux.divide(ox + 1, y1, x2, y2)
       else 
         aux.add_horizontal_wall(x1, x2, oy)
+        -- table.insert(aux.changes, saveGridState())
         aux.divide(x1, y1, x2, oy)
         aux.divide(x1, oy + 1, x2, y2)
       end
@@ -72,7 +89,7 @@ function mod.createMaze(x1, y1, x2, y2, room_size, grid)
   end
 
   aux.divide(x1, y1, x2, y2)
-  return aux.grid
+  return aux.grid--, aux.changes
 end
 
 -- Mystic Writing Generator, for real

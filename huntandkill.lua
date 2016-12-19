@@ -6,6 +6,7 @@ aux.height = false
 aux.sx = false
 aux.sy = false
 aux.grid = false
+-- aux.changes = {}
 
 function aux.createGrid (rows, columns)
 	local MazeGrid = {}
@@ -72,7 +73,18 @@ function mod.createMaze(x1, y1, x2, y2, grid)
 	aux.width, aux.height, aux.sx, aux.sy = x2, y2, x1, y1
 	aux.grid = grid or aux.createGrid(y2, x2)
 	aux.huntandkill()
-	return aux.grid
+	return aux.grid--, aux.changes
+end
+
+local function saveGridState()
+  local temp = {}
+  for yk, yv in pairs(aux.grid) do
+    temp[yk] = {}
+    for xk, xv in pairs(yv) do 
+      temp[yk][xk] = {bottom_wall = aux.grid[yk][xk].bottom_wall, right_wall = aux.grid[yk][xk].right_wall}
+    end
+  end
+  return temp
 end
 
 function aux.huntandkill()
@@ -87,46 +99,46 @@ function aux.huntandkill()
 		else
 			local isFound = false
 			for ky, vy in pairs(aux.grid) do
-				local f = 0
 				for kx, vx in pairs(vy) do
 					if aux.getUnvisitedNeighbour(kx, ky) then
 						local dir_ = aux.getUnvisitedNeighbour(kx, ky)
 						
-						aux.grid[ky][kx].visited = true
 						x, y = kx, ky
+						aux.grid[y][x].visited = true
 							
-						if dir_ == "up" then aux.grid[ky-1][kx].bottom_wall = false
-						elseif dir_ == "down" then aux.grid[ky][kx].bottom_wall = false
-						elseif dir_ == "right" then aux.grid[ky][kx].right_wall = false
-						elseif dir_ == "left" then aux.grid[ky][kx-1].right_wall = false end
+						if dir_ == "up" then aux.grid[y-1][x].bottom_wall = false 
+						elseif dir_ == "down" then aux.grid[y][x].bottom_wall = false 
+						elseif dir_ == "right" then aux.grid[y][x].right_wall = false 
+						elseif dir_ == "left" then aux.grid[y][x-1].right_wall = false end
+						-- table.insert(aux.changes, saveGridState())
 
-						dirs = aux.getUnvisited(kx, ky) 
+						dirs = aux.getUnvisited(x, y) 
 						
-						f = 1
 						isFound = true
 						break
 					end
 				end
-				if f == 1 then break end
+				if isFound then break end
 			end
 			if not isFound then break end
 		end
 
 		local dir = table.remove(dirs)
 		if dir then
-			if dir == "up" and aux.grid[y-1][x].visited == false then
+			if dir == "up" and not aux.grid[y-1][x].visited then
 				aux.grid[y-1][x].bottom_wall = false
 				y, x = y-1, x
-			elseif dir == "down" and aux.grid[y+1][x].visited == false then
+			elseif dir == "down" and not aux.grid[y+1][x].visited then
 				aux.grid[y][x].bottom_wall = false
 				y, x = y+1, x
-			elseif dir == "left" and aux.grid[y][x-1].visited == false then
+			elseif dir == "left" and not aux.grid[y][x-1].visited then
 				aux.grid[y][x-1].right_wall = false
 				y, x = y, x-1
-			elseif dir == "right" and aux.grid[y][x+1].visited == false then 
+			elseif dir == "right" and not aux.grid[y][x+1].visited then 
 				aux.grid[y][x].right_wall = false
 				y, x = y, x+1
 			end
+			-- table.insert(aux.changes, saveGridState())
 		end
 	end
 end

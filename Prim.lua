@@ -8,6 +8,7 @@ aux.sy = false
 aux.grid = false
 aux.front = {}
 aux.frontHash	= {}
+-- aux.changes = {}
 
 function aux.createGrid (rows, columns)
 	local MazeGrid = {}
@@ -25,7 +26,7 @@ function mod.createMaze(x1, y1, x2, y2, grid)
 	aux.width, aux.height, aux.sx, aux.sy = x2, y2, x1, y1
 	aux.grid = grid or aux.createGrid(y2, x2)
 	aux.prim()
-	return aux.grid
+	return aux.grid--, aux.changes
 end
 
 function aux.shuffleTable(t)
@@ -91,11 +92,24 @@ function aux.updateFront(x, y)
 	-- aux.shuffleTable(aux.front)
 end
 
+local function saveGridState()
+  local temp = {}
+  for yk, yv in pairs(aux.grid) do
+    temp[yk] = {}
+    for xk, xv in pairs(yv) do 
+      temp[yk][xk] = {bottom_wall = aux.grid[yk][xk].bottom_wall, right_wall = aux.grid[yk][xk].right_wall}
+    end
+  end
+  return temp
+end
+
 function aux.prim()
 	local ix, iy = math.random(aux.sx, aux.width), math.random(aux.sy, aux.height)
 
 	aux.grid[iy][ix].visited = true
 	aux.updateFront(ix, iy)
+
+	-- table.insert(aux.changes, saveGridState())
 
 	while #aux.front ~= 0 do
 		local value = table.remove(aux.front, math.random(1, #aux.front))
@@ -114,6 +128,7 @@ function aux.prim()
 		elseif dir == "RIGHT" then
 			aux.grid[iy][ix].right_wall = false
 		end
+		-- table.insert(aux.changes, saveGridState())
 	end
 end
 

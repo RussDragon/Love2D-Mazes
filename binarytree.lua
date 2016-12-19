@@ -1,4 +1,3 @@
-
 local mod = {}
 local aux = {}
 
@@ -7,6 +6,7 @@ aux.height = false
 aux.sx = false
 aux.sy = false
 aux.grid = false
+-- aux.changes = {}
 
 function aux.createGrid (rows, columns)
 	local MazeGrid = {}
@@ -25,11 +25,23 @@ function mod.createMaze(x1, y1, x2, y2, grid)
 	aux.width, aux.height, aux.sx, aux.sy = x2, y2, x1, y1
 	aux.grid = grid or aux.createGrid(aux.height, aux.width)
 	aux.binarytree()
-	return aux.grid
+	return aux.grid--, aux.changes
+end
+
+local function saveGridState()
+	local temp = {}
+	for yk, yv in pairs(aux.grid) do
+		temp[yk] = {}
+		for xk, xv in pairs(yv) do 
+			temp[yk][xk] = {bottom_wall = aux.grid[yk][xk].bottom_wall, right_wall = aux.grid[yk][xk].right_wall}
+		end
+	end
+	return temp
 end
 
 function aux.binarytree() 
 	if aux.width > 0 and aux.height > 0 and aux.sx < aux.width and aux.sy < aux.height then
+		-- table.insert(aux.changes, saveGridState())
 		for y = aux.sy, aux.height do 
 			for x = aux.sx, aux.width do
 				if y ~= aux.sy then 
@@ -43,8 +55,11 @@ function aux.binarytree()
 						aux.grid[y-1][x].bottom_wall = false
 					end
 				else
-					if x ~= aux.width then aux.grid[y][x].right_wall = false end
+					if x ~= aux.width then 
+						aux.grid[y][x].right_wall = false 
+					end
 				end
+				-- table.insert(aux.changes, saveGridState())
 			end
 		end
 	end

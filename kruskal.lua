@@ -6,6 +6,7 @@ aux.height = false
 aux.sx = false
 aux.sy = false
 aux.grid = false
+-- aux.changes = {}
 
 function aux.createGrid (rows, columns)
 	local MazeGrid = {}
@@ -42,17 +43,30 @@ function mod.createMaze(x1, y1, x2, y2, grid)
 	aux.width, aux.height, aux.sx, aux.sy = x2, y2, x1, y1
 	aux.grid = grid or aux.createGrid(y2, x2)
 	aux.kruskal()
-	return aux.grid
+	return aux.grid--, aux.changes
 end
 
 function aux.hashKey(x, y)
 	return x * aux.height + (y - 1)
 end
 
+local function saveGridState()
+  local temp = {}
+  for yk, yv in pairs(aux.grid) do
+    temp[yk] = {}
+    for xk, xv in pairs(yv) do 
+      temp[yk][xk] = {bottom_wall = aux.grid[yk][xk].bottom_wall, right_wall = aux.grid[yk][xk].right_wall}
+    end
+  end
+  return temp
+end
+
 function aux.kruskal()
 	local edgeStack = mod.createEdgeStack()
 	local sets = {}
-	local counter = 1
+
+	-- table.insert(aux.changes, saveGridState())
+
 	while #edgeStack ~= 0 do
 		local value = table.remove(edgeStack)
 		local x, y, dir = value.x, value.y, value.dir
@@ -95,6 +109,8 @@ function aux.kruskal()
 				end
 			end
 		end
+
+		-- table.insert(aux.changes, saveGridState())
 	end
 
 	sets = nil
