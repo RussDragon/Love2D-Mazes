@@ -60,181 +60,74 @@ function aux.hashCells(grid)
 	return vtable
 end
 
--- Dirs optimized
-
 function aux.wilson()
-	local unvisited_cells = aux.width * aux.height
+	local cellsHash = aux.hashCells(aux.grid) -- Vertex not in UST (fast random-pick)
+
 	local dirsStack = {}
+	local dsHash = {}
 	local dsSize = 0
-	local dirsHash = {}
-	local CellsHash = aux.hashCells(aux.grid)
 
-	local key = next(CellsHash, nil)
-	local vx, vy = aux.deHashKey(key)
+	-- Creating UST
+	local key, v = next(cellsHash, nil)
+	v.visited = true
+	cellsHash[key] = nil
 
-	-- Adding vertice to UST
-	CellsHash[key] = nil
-	aux.grid[vy][vx].visited = true
-	
-	unvisited_cells = unvisited_cells - 1
+	while next(cellsHash) do 
+		key = next(cellsHash, nil)
+		local start_x, start_y = aux.deHashKey(key)
+		local ix, iy = start_x, start_y
 
-	-- Getting vertice not in UST
-	key = next(CellsHash, nil)
-	vx, vy = aux.deHashKey(key)
-	CellsHash[key] = nil
-	
-	local stx, sty = vx, vy
-	aux.grid[sty][sty].point = true
+		while not aux.grid[iy][ix].visited do 
+			local dir = aux.dirs[math.random(1, 4)]
+			key = aux.hashKey(ix, iy)
+			local isAllowed = false
 
-	local ix, iy = stx, sty -- sub-vertecies
+			if dir == "UP" and iy-1 >= aux.sy then iy = iy - 1 isAllowed = true
+			elseif dir == "DOWN" and iy+1 <= aux.height then iy = iy + 1 isAllowed = true
+			elseif dir == "LEFT" and ix-1 >= aux.sx then ix = ix - 1 isAllowed = true
+			elseif dir == "RIGHT" and ix+1 <= aux.width then ix = ix + 1 isAllowed = true end
 
-	while unvisited_cells ~= 0 do
-		-- table.insert(aux.changes, saveGridState())
+			if isAllowed then
+				if dsHash[key] then
+					dirsStack[dsHash[key]].dir = dir
 
-		if aux.grid[iy][ix].visited == true then 
-			aux.grid[sty][stx].visited = true
-			CellsHash[aux.hashKey(stx, sty)] = nil
-
-			while unvisited_cells ~= 0 do
-				if stx == ix and sty == iy then
-					key = next(CellsHash, nil)
-					vx, vy = aux.deHashKey(key)
-					CellsHash[key] = nil
-
-					aux.grid[sty][stx].point = false
-					for k, v in pairs(dirsStack) do
-						local x, y = aux.deHashKey(dirsStack[k].ref)
-						aux.grid[y][x].point = false
+					for i = dsHash[key]+1, dsSize do
+						dsHash[dirsStack[i].hashref] = nil
+						dirsStack[i] = nil
+						dsSize = dsSize - 1
 					end
+				else
+					dsSize = dsSize + 1
+					dsHash[key] = dsSize
+					dirsStack[dsSize] = {dir = dir, hashref = key}
+				end
+			end
+		end
 
-					stx, sty = vx, vy
+		for i = 1, dsSize do
+			aux.grid[start_y][start_x].visited = true
+			cellsHash[aux.hashKey(start_x, start_y)] = nil
+			local dir = dirsStack[i].dir
+
+			if dir == "UP" then
+				aux.grid[start_y-1][start_x].bottom_wall = false
+				start_y = start_y - 1
 			
-					aux.grid[sty][stx].point = true
-					dirsStack = {}
-					dirsHash = {}
-					dsSize = 0
-					break
-				end
+			elseif dir == "DOWN" then
+				aux.grid[start_y][start_x].bottom_wall = false
+				start_y = start_y + 1
+			
+			elseif dir == "LEFT" then
+				aux.grid[start_y][start_x-1].right_wall = false
+				start_x = start_x - 1
 
-				for i = 1, dsSize do
-					unvisited_cells = unvisited_cells - 1
-					if dirsStack[i].dir == "UP" then
-					    aux.grid[sty-1][stx].visited = true
-							CellsHash[aux.hashKey(stx, sty-1)] = nil
-					    aux.grid[sty-1][stx].bottom_wall = false
-					    sty = sty - 1
-					elseif dirsStack[i].dir == "DOWN" then
-					    aux.grid[sty+1][stx].visited = true
-					    CellsHash[aux.hashKey(stx, sty+1)] = nil
-					    aux.grid[sty][stx].bottom_wall = false
-					    sty = sty + 1
-					elseif dirsStack[i].dir == "LEFT" then
-					    aux.grid[sty][stx-1].visited = true
-					    CellsHash[aux.hashKey(stx-1, sty)] = nil
-					    aux.grid[sty][stx-1].right_wall = false
-					    stx = stx - 1
-					elseif dirsStack[i].dir == "RIGHT" then
-					    aux.grid[sty][stx+1].visited = true
-					    CellsHash[aux.hashKey(stx+1, sty)] = nil
-					    aux.grid[sty][stx].right_wall = false
-					    stx = stx + 1
-					end
-				end
-			end
-			ix, iy = stx, sty
-		end
-
-		if unvisited_cells <= 0 then 
-			for yk, yv in pairs(aux.grid) do
-				for xk, xv in pairs(yv) do
-					xv.point = false
-				end
-			end
-			table.insert(aux.changes, saveGridState()) 
-			break 
-		end
-		
-		local dir = aux.dirs[math.random(1, 4)]
-		key = aux.hashKey(ix, iy)
-
-		if dir == "UP" then 
-			if iy-1 >= aux.sy then
-				if not dirsHash[key] then
-					dsSize = dsSize + 1
-					dirsStack[dsSize] = {dir = "UP", ref = key}
-					dirsHash[key] = dsSize
-					aux.grid[iy][ix].point = true
-
-				else dirsStack[dirsHash[key]].dir = "UP"
-					for i = dirsHash[key]+1, dsSize do
-						local x, y = aux.deHashKey(dirsStack[i].ref)
-						dirsHash[dirsStack[i].ref] = nil
-						dirsStack[i] = nil
-						dsSize = dsSize - 1
-						aux.grid[y][x].point = false
-					end
-				end
-				iy = iy - 1
-			end
-		elseif dir == "DOWN" then 
-			if iy+1 <= aux.height then 
-				if not dirsHash[key] then 
-					dsSize = dsSize + 1
-					dirsStack[dsSize] = {dir = "DOWN", ref = key}
-					dirsHash[key] = dsSize
-					aux.grid[iy][ix].point = true
-
-				else dirsStack[dirsHash[key]].dir = "DOWN" 
-					for i = dirsHash[key]+1, dsSize do
-						local x, y = aux.deHashKey(dirsStack[i].ref)
-						dirsHash[dirsStack[i].ref] = nil
-						dirsStack[i] = nil
-						dsSize = dsSize - 1
-						aux.grid[y][x].point = false
-					end
-				end
-				iy = iy + 1
-			end
-		elseif dir == "RIGHT" then 
-			if ix+1 <= aux.width then
-				if not dirsHash[key] then 
-					dsSize = dsSize + 1
-					dirsStack[dsSize] = {dir = "RIGHT", ref = key}
-					dirsHash[key] = dsSize
-					aux.grid[iy][ix].point = true
-
-				else dirsStack[dirsHash[key]].dir = "RIGHT" 
-					for i = dirsHash[key]+1, dsSize do
-						local x, y = aux.deHashKey(dirsStack[i].ref)
-						dirsHash[dirsStack[i].ref] = nil
-						dirsStack[i] = nil
-						dsSize = dsSize - 1
-						aux.grid[y][x].point = false
-					end
-				end
-				ix = ix + 1
-			end
-		elseif dir == "LEFT" then 
-			if ix-1 >= aux.sx then
-				if not dirsHash[key] then
-					dsSize = dsSize + 1
-					dirsStack[dsSize] = {dir = "LEFT", ref = key}
-					dirsHash[key] = dsSize
-					aux.grid[iy][ix].point = true
-
-				else dirsStack[dirsHash[key]].dir = "LEFT" 
-					for i = dirsHash[key]+1, dsSize do
-						local x, y = aux.deHashKey(dirsStack[i].ref)
-						dirsHash[dirsStack[i].ref] = nil
-						dirsStack[i] = nil
-						dsSize = dsSize - 1
-						aux.grid[y][x].point = false
-					end
-				end
-				ix = ix - 1
+			elseif dir == "RIGHT" then 
+				aux.grid[start_y][start_x].right_wall = false
+				start_x = start_x + 1
 			end
 		end
-	table.insert(aux.changes, saveGridState())
+
+		dsHash, dirsStack, dsSize = {}, {}, 0
 	end
 end
 

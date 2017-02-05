@@ -122,7 +122,7 @@ function love.load(arg)
   love.graphics.setBackgroundColor(255, 255, 255, 255)
 
   isColored = false
-  isAnimated = true
+  isAnimated = false
   
   changes_state = 0
 
@@ -130,7 +130,7 @@ function love.load(arg)
   love.window.setMode( 900, 900, windowed, false, 0 )
   window_w, window_h = love.graphics.getDimensions()
   
-  columns, rows = 5, 5
+  columns, rows = 10, 10
   ox, oy = 0, 0 -- Начальные координаты, левый верхний угол
   w, h = window_w / columns, window_h / rows
   -- w, h = 10, 10
