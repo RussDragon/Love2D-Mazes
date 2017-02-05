@@ -106,13 +106,13 @@ function aux.huntandkill()
 						x, y = kx, ky
 						aux.grid[y][x].visited = true
 							
-						if dir_ == "up" then aux.grid[y-1][x].bottom_wall = false 
-						elseif dir_ == "down" then aux.grid[y][x].bottom_wall = false 
-						elseif dir_ == "right" then aux.grid[y][x].right_wall = false 
+						if dir_ == "up" then aux.grid[y-1][x].bottom_wall = false
+						elseif dir_ == "down" then aux.grid[y][x].bottom_wall = false
+						elseif dir_ == "right" then aux.grid[y][x].right_wall = false
 						elseif dir_ == "left" then aux.grid[y][x-1].right_wall = false end
 						-- table.insert(aux.changes, saveGridState())
 
-						dirs = aux.getUnvisited(x, y) 
+						dirs = aux.getUnvisited(x, y)
 						
 						isFound = true
 						break

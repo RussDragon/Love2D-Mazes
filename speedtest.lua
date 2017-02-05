@@ -1,134 +1,358 @@
 local mod = {}
 local aux = {}
 
-aux.width = false 
+aux.width = false
 aux.height = false
 aux.sx = false
 aux.sy = false
 aux.grid = false
+aux.changes = {}
+
+aux.dirs = {"UP", "DOWN", "LEFT", "RIGHT"}
 
 function aux.createGrid (rows, columns)
 	local MazeGrid = {}
-	local color = 0
-
+	
 	for y = 1, rows do 
 		MazeGrid[y] = {}
 		for x = 1, columns do
-			MazeGrid[y][x] = {visited = false, bottom_wall = true, right_wall = true} -- Wall grid
+			MazeGrid[y][x] = {dir = "NONE", visited = false, bottom_wall = true, right_wall = true, point = 0} -- Wall grid
 		end
 	end  
 	return MazeGrid
 end
 
-function aux.shuffleTable(t)
-    for i = #t, 2, -1 do
-        local j = math.random(i)
-        t[i], t[j] = t[j], t[i]
-    end
-end
-
-function aux.getUnvisitedNeighbour(x, y)
-	if y-1 >= aux.sy and aux.grid[y-1][x].visited == true and aux.grid[y][x].visited == false then  -- UP
-		return "up"
+local function saveGridState()
+	local temp = {}
+	for yk, yv in pairs(aux.grid) do
+		temp[yk] = {}
+		for xk, xv in pairs(yv) do 
+			temp[yk][xk] = {bottom_wall = aux.grid[yk][xk].bottom_wall, right_wall = aux.grid[yk][xk].right_wall, point = aux.grid[yk][xk].point}
+		end
 	end
-	
-	if y+1 <= aux.height and aux.grid[y+1][x].visited == true and aux.grid[y][x].visited == false then -- DOWN
-		return "down"
-	end
-	
-	if x-1 >= aux.sx and aux.grid[y][x-1].visited == true and aux.grid[y][x].visited == false then -- LEFT
-		return "left"
-	end
-	
-	if x+1 <= aux.width and aux.grid[y][x+1].visited == true and aux.grid[y][x].visited == false then -- RIGHT
-		return "right"
-	end
-	return false
-end
-
-function aux.getUnvisited(x, y)
-	local dirs = {}
-	if y-1 >= aux.sy and aux.grid[y-1][x].visited == false then  -- UP
-		dirs[#dirs + 1] = "up"
-	end
-	
-	if y+1 <= aux.height and aux.grid[y+1][x].visited == false then -- DOWN
-		dirs[#dirs + 1] = "down"
-	end
-	
-	if x-1 >= aux.sx and aux.grid[y][x-1].visited == false then -- LEFT
-		dirs[#dirs + 1] = "left"
-	end
-	
-	if x+1 <= aux.width and aux.grid[y][x+1].visited == false then -- RIGHT
-		dirs[#dirs + 1] = "right"
-	end
-
-	aux.shuffleTable(dirs)
-	return dirs
+	return temp
 end
 
 function mod.createMaze(x1, y1, x2, y2, grid)
 	aux.width, aux.height, aux.sx, aux.sy = x2, y2, x1, y1
 	aux.grid = grid or aux.createGrid(y2, x2)
-	aux.huntandkill()
-	return aux.grid
+	aux.wilson()
+	return aux.grid, aux.changes
 end
 
-function aux.huntandkill()
-	local dirs = {}
+-- function aux.wilson()
+-- 	local unvisited_cells = aux.width * aux.height 
 
-	local x, y = aux.sx, aux.sy
-	while true do
-		aux.grid[y][x].visited = true
-		
-		if #aux.getUnvisited(x, y) ~= 0 then
-			dirs = aux.getUnvisited(x, y)
-		else
-			local isFound = false
-			for ky, vy in pairs(aux.grid) do
-				local f = 0
-				for kx, vx in pairs(vy) do
-					if aux.getUnvisitedNeighbour(kx, ky) then
-						local dir_ = aux.getUnvisitedNeighbour(kx, ky)
-						
-						aux.grid[ky][kx].visited = true
-						x, y = kx, ky
-							
-						if dir_ == "up" then aux.grid[ky-1][kx].bottom_wall = false
-						elseif dir_ == "down" then aux.grid[ky][kx].bottom_wall = false
-						elseif dir_ == "right" then aux.grid[ky][kx].right_wall = false
-						elseif dir_ == "left" then aux.grid[ky][kx-1].right_wall = false end
+-- 	local y, x = math.random(aux.sy, aux.height), math.random(aux.sx, aux.width)
+-- 	aux.grid[y][x].visited = true
+-- 	unvisited_cells = unvisited_cells - 1
 
-						dirs = aux.getUnvisited(kx, ky) 
-						
-						f = 1
-						isFound = true
-						break
+-- 	local stx, sty
+-- 	while true do
+-- 		stx, sty = math.random(aux.sx, aux.width), math.random(aux.sy, aux.height) -- Start point
+-- 		if aux.grid[sty][stx].visited == false then break end
+-- 	end
+
+-- 	local ix, iy = stx, sty -- sub-vertecies
+
+-- 	while unvisited_cells ~= 0 do
+-- 		if aux.grid[iy][ix].visited == true then 
+-- 			aux.grid[sty][stx].visited = true
+-- 			while unvisited_cells ~= 0 do
+-- 				if stx == ix and sty == iy then 
+-- 					while true do
+-- 						stx, sty = math.random(aux.sx, aux.width), math.random(aux.sy, aux.height) 
+-- 						if aux.grid[sty][stx].visited == false then break end
+-- 					end
+-- 					break
+-- 				else unvisited_cells = unvisited_cells - 1 end
+
+-- 				local dir = aux.grid[sty][stx].dir
+-- 				if dir == "UP" then
+-- 				    aux.grid[sty-1][stx].visited = true
+-- 				    aux.grid[sty-1][stx].bottom_wall = false
+-- 				    sty = sty - 1
+-- 				elseif dir == "DOWN" then
+-- 				    aux.grid[sty+1][stx].visited = true
+-- 				    aux.grid[sty][stx].bottom_wall = false
+-- 				    sty = sty + 1
+-- 				elseif dir == "LEFT" then
+-- 				    aux.grid[sty][stx-1].visited = true
+-- 				    aux.grid[sty][stx-1].right_wall = false
+-- 				    stx = stx - 1
+-- 				elseif dir == "RIGHT" then
+-- 				    aux.grid[sty][stx+1].visited = true
+-- 				    aux.grid[sty][stx].right_wall = false
+-- 				    stx = stx + 1
+-- 				end
+-- 			end
+-- 			ix, iy = stx, sty
+-- 		end
+
+-- 		local dir = aux.dirs[math.random(1, 4)]
+-- 		if dir == "UP" then -- UP
+-- 			if iy-1 >= aux.sy then
+-- 				aux.grid[iy][ix].dir = "UP"
+-- 				iy = iy - 1
+-- 			end
+-- 		elseif dir == "DOWN" then -- DOWN 
+-- 			if iy+1 <= aux.height then 
+-- 				aux.grid[iy][ix].dir = "DOWN"
+-- 				iy = iy + 1
+-- 			end
+-- 		elseif dir == "RIGHT" then -- RIGHT
+-- 			if ix+1 <= aux.width then
+-- 				aux.grid[iy][ix].dir = "RIGHT"
+-- 				ix = ix + 1
+-- 			end
+-- 		elseif dir == "LEFT" then -- LEFT
+-- 			if ix-1 >= aux.sx then
+-- 				aux.grid[iy][ix].dir = "LEFT"
+-- 				ix = ix - 1
+-- 			end
+-- 		end
+-- 	end
+-- end
+
+function aux.hashKey(x, y)
+	return x * aux.height + (y - 1)
+end
+
+function aux.deHashKey(value)
+	return math.floor(value/aux.height), value%aux.height + 1
+end
+
+function aux.hashCells(grid)
+	local vtable = {}
+	for yk, yv in pairs(grid) do
+		for xk, xv in pairs(yv) do
+			if xv.visited == false then
+				vtable[aux.hashKey(xk, yk)] = xv -- Добавляем только ссылки, не занимаем память, профит (?)
+			end
+		end
+	end
+	return vtable
+end
+
+-- Dirs optimized
+
+function aux.wilson()
+	local unvisited_cells = aux.width * aux.height
+	local dirsStack = {}
+	local dirsHash = {}
+	local CellsHash = aux.hashCells(aux.grid)
+
+	local key = next(CellsHash, nil)
+	local vx, vy = aux.deHashKey(key)
+	CellsHash[key] = nil
+	aux.grid[vy][vx].visited = true
+	
+	unvisited_cells = unvisited_cells - 1
+
+	key = next(CellsHash, nil)
+	vx, vy = aux.deHashKey(key)
+	CellsHash[key] = nil
+	
+	local stx, sty = vx, vy
+
+	local ix, iy = stx, sty -- sub-vertecies
+
+	while unvisited_cells ~= 0 do
+		if aux.grid[iy][ix].visited == true then 
+			aux.grid[sty][stx].visited = true
+			CellsHash[aux.hashKey(stx, sty)] = nil
+			while unvisited_cells ~= 0 do
+				if stx == ix and sty == iy then 
+					key = next(CellsHash, nil)
+					vx, vy = aux.deHashKey(key)
+					CellsHash[key] = nil
+
+					stx, sty = vx, vy
+
+					dirsStack = {}
+					dirsHash = {}
+					break
+				end
+
+				for i = 1, #dirsStack do
+					unvisited_cells = unvisited_cells - 1
+					if dirsStack[i].dir == "UP" then
+					    aux.grid[sty-1][stx].visited = true
+							CellsHash[aux.hashKey(stx, sty-1)] = nil
+					    aux.grid[sty-1][stx].bottom_wall = false
+					    sty = sty - 1
+					elseif dirsStack[i].dir == "DOWN" then
+					    aux.grid[sty+1][stx].visited = true
+					    CellsHash[aux.hashKey(stx, sty+1)] = nil
+					    aux.grid[sty][stx].bottom_wall = false
+					    sty = sty + 1
+					elseif dirsStack[i].dir == "LEFT" then
+					    aux.grid[sty][stx-1].visited = true
+					    CellsHash[aux.hashKey(stx-1, sty)] = nil
+					    aux.grid[sty][stx-1].right_wall = false
+					    stx = stx - 1
+					elseif dirsStack[i].dir == "RIGHT" then
+					    aux.grid[sty][stx+1].visited = true
+					    CellsHash[aux.hashKey(stx+1, sty)] = nil
+					    aux.grid[sty][stx].right_wall = false
+					    stx = stx + 1
 					end
 				end
-				if f == 1 then break end
 			end
-			if not isFound then break end
+			ix, iy = stx, sty
 		end
 
-		local dir = table.remove(dirs)
-		if dir then
-			if dir == "up" and aux.grid[y-1][x].visited == false then
-				aux.grid[y-1][x].bottom_wall = false
-				y, x = y-1, x
-			elseif dir == "down" and aux.grid[y+1][x].visited == false then
-				aux.grid[y][x].bottom_wall = false
-				y, x = y+1, x
-			elseif dir == "left" and aux.grid[y][x-1].visited == false then
-				aux.grid[y][x-1].right_wall = false
-				y, x = y, x-1
-			elseif dir == "right" and aux.grid[y][x+1].visited == false then 
-				aux.grid[y][x].right_wall = false
-				y, x = y, x+1
+		local dir = aux.dirs[math.random(1, 4)]
+		key = aux.hashKey(ix, iy)
+
+		if dir == "UP" then 
+			if iy-1 >= aux.sy then
+				if not dirsHash[key] then
+					dirsStack[#dirsStack+1] = {dir = "UP", ref = key}
+					dirsHash[key] = #dirsStack
+				else dirsStack[dirsHash[key]].dir = "UP"
+					for i = dirsHash[key]+1, #dirsStack do
+						dirsHash[dirsStack[i].ref] = nil
+						dirsStack[i] = nil
+					end
+				end
+				iy = iy - 1
+			end
+		elseif dir == "DOWN" then 
+			if iy+1 <= aux.height then 
+				if not dirsHash[key] then 
+					dirsStack[#dirsStack+1] = {dir = "DOWN", ref = key}
+					dirsHash[key] = #dirsStack
+				else dirsStack[dirsHash[key]].dir = "DOWN" 
+					for i = dirsHash[key]+1, #dirsStack do
+						dirsHash[dirsStack[i].ref] = nil
+						dirsStack[i] = nil
+					end
+				end
+				iy = iy + 1
+			end
+		elseif dir == "RIGHT" then 
+			if ix+1 <= aux.width then
+				if not dirsHash[key] then 
+					dirsStack[#dirsStack+1] = {dir = "RIGHT", ref = key}
+					dirsHash[key] = #dirsStack
+				else dirsStack[dirsHash[key]].dir = "RIGHT" 
+					for i = dirsHash[key]+1, #dirsStack do
+						dirsHash[dirsStack[i].ref] = nil
+						dirsStack[i] = nil
+					end
+				end
+				ix = ix + 1
+			end
+		elseif dir == "LEFT" then 
+			if ix-1 >= aux.sx then
+				if not dirsHash[key] then
+					dirsStack[#dirsStack+1] = {dir = "LEFT", ref = key}
+					dirsHash[key] = #dirsStack
+				else dirsStack[dirsHash[key]].dir = "LEFT" 
+					for i = dirsHash[key]+1, #dirsStack do
+						dirsHash[dirsStack[i].ref] = nil
+						dirsStack[i] = nil
+					end
+				end
+				ix = ix - 1
 			end
 		end
 	end
 end
 
-	mGrid = mod.createMaze(1, 1, 100, 100)
+-- Optimized Wilson algorithm with hash-table
+
+-- function aux.wilson()
+-- 	local unvisited_cells = aux.width * aux.height
+
+-- 	-- Выбираем случайную вершину, которая будет начальной в UST
+-- 	local CellsHash = aux.hashCells(aux.grid)
+-- 	local key = next(CellsHash, key)
+-- 	local vx, vy = aux.deHashKey(key)
+
+-- 	CellsHash[key] = nil
+-- 	aux.grid[vy][vx].visited = true
+-- 	unvisited_cells = unvisited_cells - 1
+
+-- 	-- Выбираем следующую случайную вершину, которая должна будет соединиться с начальной
+-- 	key = next(CellsHash, key)
+-- 	CellsHash[key] = nil
+-- 	vx, vy = aux.deHashKey(key)
+	
+-- 	-- startx, starty – начальные координаты вершины случайного прохода
+-- 	local stx, sty = vx, vy
+-- 	local ix, iy = stx, sty -- sub-vertecies
+
+-- 	while unvisited_cells ~= 0 do
+-- 		if aux.grid[iy][ix].visited then 
+-- 			aux.grid[sty][stx].visited = true
+-- 			CellsHash[aux.hashKey(stx, sty)] = nil
+
+-- 			while unvisited_cells ~= 0 do
+-- 				if stx == ix and sty == iy then 
+-- 					key = next(CellsHash, key)
+-- 					vx, vy = aux.deHashKey(key)
+-- 					CellsHash[key] = nil
+
+-- 					stx, sty = vx, vy
+-- 					break
+-- 				else 
+-- 					unvisited_cells = unvisited_cells - 1
+
+-- 					local dir = aux.grid[sty][stx].dir
+-- 					if dir == "UP" then
+-- 					    aux.grid[sty-1][stx].visited = true
+-- 							CellsHash[aux.hashKey(stx, sty-1)] = nil
+-- 					    aux.grid[sty-1][stx].bottom_wall = false
+-- 					    sty = sty - 1
+-- 					elseif dir == "DOWN" then
+-- 					    aux.grid[sty+1][stx].visited = true
+-- 					    CellsHash[aux.hashKey(stx, sty+1)] = nil
+-- 					    aux.grid[sty][stx].bottom_wall = false
+-- 					    sty = sty + 1
+-- 					elseif dir == "LEFT" then
+-- 					    aux.grid[sty][stx-1].visited = true
+-- 					    CellsHash[aux.hashKey(stx-1, sty)] = nil
+-- 					    aux.grid[sty][stx-1].right_wall = false
+-- 					    stx = stx - 1
+-- 					elseif dir == "RIGHT" then
+-- 					    aux.grid[sty][stx+1].visited = true
+-- 					    CellsHash[aux.hashKey(stx+1, sty)] = nil
+-- 					    aux.grid[sty][stx].right_wall = false
+-- 					    stx = stx + 1
+-- 					end
+-- 					table.insert(aux.changes, saveGridState())
+-- 				end
+-- 			end
+-- 			ix, iy = stx, sty
+-- 		end
+
+-- 		local dir = aux.dirs[math.random(1, 4)]
+-- 		if dir == "UP" then -- UP
+-- 			if iy-1 >= aux.sy then
+-- 				aux.grid[iy][ix].dir = "UP"
+-- 				iy = iy - 1
+-- 			end
+-- 		elseif dir == "DOWN" then -- DOWN 
+-- 			if iy+1 <= aux.height then 
+-- 				aux.grid[iy][ix].dir = "DOWN"
+-- 				iy = iy + 1
+-- 			end
+-- 		elseif dir == "RIGHT" then -- RIGHT
+-- 			if ix+1 <= aux.width then
+-- 				aux.grid[iy][ix].dir = "RIGHT"
+-- 				ix = ix + 1
+-- 			end
+-- 		elseif dir == "LEFT" then -- LEFT
+-- 			if ix-1 >= aux.sx then
+-- 				aux.grid[iy][ix].dir = "LEFT"
+-- 				ix = ix - 1
+-- 			end
+-- 		end
+-- 	end
+-- end
+
+mGrid = mod.createMaze(1, 1, 100, 100)
+
+return mod

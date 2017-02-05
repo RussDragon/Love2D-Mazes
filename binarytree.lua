@@ -40,27 +40,25 @@ local function saveGridState()
 end
 
 function aux.binarytree() 
-	if aux.width > 0 and aux.height > 0 and aux.sx < aux.width and aux.sy < aux.height then
-		-- table.insert(aux.changes, saveGridState())
-		for y = aux.sy, aux.height do 
-			for x = aux.sx, aux.width do
-				if y ~= aux.sy then 
-					if math.random(0, 1) == 0 then 
-						if x ~= aux.width then 
-							aux.grid[y][x].right_wall = false
-						else
-							aux.grid[y-1][x].bottom_wall = false
-						end
+	-- table.insert(aux.changes, saveGridState())
+	for y = aux.sy, aux.height do 
+		for x = aux.sx, aux.width do
+			if y ~= aux.sy then 
+				if math.random(0, 1) == 0 then 
+					if x ~= aux.width then 
+						aux.grid[y][x].right_wall = false
 					else
 						aux.grid[y-1][x].bottom_wall = false
 					end
 				else
-					if x ~= aux.width then 
-						aux.grid[y][x].right_wall = false 
-					end
+					aux.grid[y-1][x].bottom_wall = false
 				end
-				-- table.insert(aux.changes, saveGridState())
+			else
+				if x ~= aux.width then 
+					aux.grid[y][x].right_wall = false 
+				end
 			end
+			-- table.insert(aux.changes, saveGridState())
 		end
 	end
 end

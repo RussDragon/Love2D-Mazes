@@ -108,6 +108,7 @@ function aux.backtrackingMaze(x, y)
 	end
 end
 
+-- Growing Tree algorithm
 function aux.LoopsMaze()
 	local dirs = {}
 
