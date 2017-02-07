@@ -6,7 +6,7 @@ aux.height = false
 aux.sx = false
 aux.sy = false
 aux.grid = false
-aux.changes = {}
+-- aux.changes = {}
 
 aux.dirs = {"UP", "DOWN", "LEFT", "RIGHT"}
 
@@ -37,7 +37,7 @@ function mod.createMaze(x1, y1, x2, y2, grid)
 	aux.width, aux.height, aux.sx, aux.sy = x2, y2, x1, y1
 	aux.grid = grid or aux.createGrid(y2, x2)
 	aux.wilson()
-	return aux.grid, aux.changes
+	return aux.grid--, aux.changes
 end
 
 function aux.hashKey(x, y)
@@ -61,52 +61,57 @@ function aux.hashCells(grid)
 end
 
 function aux.wilson()
-	local cellsHash = aux.hashCells(aux.grid) -- Vertex not in UST (fast random-pick)
+	local cellsHash = aux.hashCells(aux.grid) -- Вершины, не находящиеся в дереве
 
-	local dirsStack = {}
+	local dirsStack = {} -- Стак направлений
 	local dsHash = {}
 	local dsSize = 0
 
-	-- Creating UST
+	-- Создаем дерево
 	local key, v = next(cellsHash, nil)
 	v.visited = true
 	cellsHash[key] = nil
 
-	while next(cellsHash) do 
-		key = next(cellsHash, nil)
+	while next(cellsHash) do -- Пока есть необработанные вершины, работает
+		key = next(cellsHash, nil) -- Получаем ключ и по нему координаты клетки
 		local start_x, start_y = aux.deHashKey(key)
 		local ix, iy = start_x, start_y
 
-		while not aux.grid[iy][ix].visited do 
+		while not aux.grid[iy][ix].visited do  -- Ходим, пока не найдем относящуюся к дереву клетку
 			local dir = aux.dirs[math.random(1, 4)]
+			local isMoved = false
+
 			key = aux.hashKey(ix, iy)
-			local isAllowed = false
 
-			if dir == "UP" and iy-1 >= aux.sy then iy = iy - 1 isAllowed = true
-			elseif dir == "DOWN" and iy+1 <= aux.height then iy = iy + 1 isAllowed = true
-			elseif dir == "LEFT" and ix-1 >= aux.sx then ix = ix - 1 isAllowed = true
-			elseif dir == "RIGHT" and ix+1 <= aux.width then ix = ix + 1 isAllowed = true end
+			if dir == "UP" and iy-1 >= aux.sy then iy = iy - 1 isMoved = true
+			elseif dir == "DOWN" and iy+1 <= aux.height then iy = iy + 1 isMoved = true
+			elseif dir == "LEFT" and ix-1 >= aux.sx then ix = ix - 1 isMoved = true
+			elseif dir == "RIGHT" and ix+1 <= aux.width then ix = ix + 1 isMoved = true end
 
-			if isAllowed then
-				if dsHash[key] then
+			if isMoved then -- Если мы можем двигаться, тогда проверяем на циклы
+				if dsHash[key] then -- Удаление циклов
 					dirsStack[dsHash[key]].dir = dir
 
 					for i = dsHash[key]+1, dsSize do
+						local x, y = aux.deHashKey(dirsStack[i].hashref)
 						dsHash[dirsStack[i].hashref] = nil
 						dirsStack[i] = nil
 						dsSize = dsSize - 1
 					end
 				else
+					local x, y = aux.deHashKey(key) -- Добавление в стак направлений
 					dsSize = dsSize + 1
 					dsHash[key] = dsSize
 					dirsStack[dsSize] = {dir = dir, hashref = key}
 				end
 			end
+			
 		end
 
-		for i = 1, dsSize do
+		for i = 1, dsSize do -- Проквапывание пути
 			aux.grid[start_y][start_x].visited = true
 			cellsHash[aux.hashKey(start_x, start_y)] = nil
+			aux.grid[start_y][start_x].point = false
 			local dir = dirsStack[i].dir
 
 			if dir == "UP" then
@@ -127,100 +132,9 @@ function aux.wilson()
 			end
 		end
 
-		dsHash, dirsStack, dsSize = {}, {}, 0
+		dsHash, dirsStack, dsSize = {}, {}, 0 -- Обнуление стака направлений
 	end
 end
 
--- Optimized Wilson algorithm with hash-table
-
--- function aux.wilson()
--- 	local unvisited_cells = aux.width * aux.height
-
--- 	-- Выбираем случайную вершину, которая будет начальной в UST
--- 	local CellsHash = aux.hashCells(aux.grid)
--- 	local key = next(CellsHash, key)
--- 	local vx, vy = aux.deHashKey(key)
-
--- 	CellsHash[key] = nil
--- 	aux.grid[vy][vx].visited = true
--- 	unvisited_cells = unvisited_cells - 1
-
--- 	-- Выбираем следующую случайную вершину, которая должна будет соединиться с начальной
--- 	key = next(CellsHash, key)
--- 	CellsHash[key] = nil
--- 	vx, vy = aux.deHashKey(key)
-	
--- 	-- startx, starty – начальные координаты вершины случайного прохода
--- 	local stx, sty = vx, vy
--- 	local ix, iy = stx, sty -- sub-vertecies
-
--- 	while unvisited_cells ~= 0 do
--- 		if aux.grid[iy][ix].visited then 
--- 			aux.grid[sty][stx].visited = true
--- 			CellsHash[aux.hashKey(stx, sty)] = nil
-
--- 			while unvisited_cells ~= 0 do
--- 				if stx == ix and sty == iy then 
--- 					key = next(CellsHash, key)
--- 					vx, vy = aux.deHashKey(key)
--- 					CellsHash[key] = nil
-
--- 					stx, sty = vx, vy
--- 					break
--- 				else 
--- 					unvisited_cells = unvisited_cells - 1
-
--- 					local dir = aux.grid[sty][stx].dir
--- 					if dir == "UP" then
--- 					    aux.grid[sty-1][stx].visited = true
--- 							CellsHash[aux.hashKey(stx, sty-1)] = nil
--- 					    aux.grid[sty-1][stx].bottom_wall = false
--- 					    sty = sty - 1
--- 					elseif dir == "DOWN" then
--- 					    aux.grid[sty+1][stx].visited = true
--- 					    CellsHash[aux.hashKey(stx, sty+1)] = nil
--- 					    aux.grid[sty][stx].bottom_wall = false
--- 					    sty = sty + 1
--- 					elseif dir == "LEFT" then
--- 					    aux.grid[sty][stx-1].visited = true
--- 					    CellsHash[aux.hashKey(stx-1, sty)] = nil
--- 					    aux.grid[sty][stx-1].right_wall = false
--- 					    stx = stx - 1
--- 					elseif dir == "RIGHT" then
--- 					    aux.grid[sty][stx+1].visited = true
--- 					    CellsHash[aux.hashKey(stx+1, sty)] = nil
--- 					    aux.grid[sty][stx].right_wall = false
--- 					    stx = stx + 1
--- 					end
--- 					table.insert(aux.changes, saveGridState())
--- 				end
--- 			end
--- 			ix, iy = stx, sty
--- 		end
-
--- 		local dir = aux.dirs[math.random(1, 4)]
--- 		if dir == "UP" then -- UP
--- 			if iy-1 >= aux.sy then
--- 				aux.grid[iy][ix].dir = "UP"
--- 				iy = iy - 1
--- 			end
--- 		elseif dir == "DOWN" then -- DOWN 
--- 			if iy+1 <= aux.height then 
--- 				aux.grid[iy][ix].dir = "DOWN"
--- 				iy = iy + 1
--- 			end
--- 		elseif dir == "RIGHT" then -- RIGHT
--- 			if ix+1 <= aux.width then
--- 				aux.grid[iy][ix].dir = "RIGHT"
--- 				ix = ix + 1
--- 			end
--- 		elseif dir == "LEFT" then -- LEFT
--- 			if ix-1 >= aux.sx then
--- 				aux.grid[iy][ix].dir = "LEFT"
--- 				ix = ix - 1
--- 			end
--- 		end
--- 	end
--- end
 
 return mod

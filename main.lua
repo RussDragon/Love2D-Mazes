@@ -110,7 +110,7 @@ local function createPNG()
 
   local data = canvas:newImageData(0, 0, window_w, window_h)
   data:encode( "png", "colored_maze" .. NameC .. ".png" )
-  NameC = NameC + 1
+  NameC = NameC + 1 
   love.graphics.setCanvas()
 end
 
@@ -121,16 +121,16 @@ function love.load(arg)
 
   love.graphics.setBackgroundColor(255, 255, 255, 255)
 
-  isColored = false
+  isColored = true
   isAnimated = false
   
   changes_state = 0
 
   -- love.window.setMode( 386, 390, windowed, false, 0 )
-  love.window.setMode( 900, 900, windowed, false, 0 )
+  love.window.setMode( 780, 500, windowed, false, 0 )
   window_w, window_h = love.graphics.getDimensions()
   
-  columns, rows = 10, 10
+  columns, rows = 78, 50
   ox, oy = 0, 0 -- Начальные координаты, левый верхний угол
   w, h = window_w / columns, window_h / rows
   -- w, h = 10, 10
@@ -145,12 +145,12 @@ function love.load(arg)
 
   local t1 = os.clock()
   -- mGrid, changes_mat = recursivedivision.createMaze(1, 1, columns, rows, 8)
-  -- mGrid, changes_mat = binarytree.createMaze(1, 1, columns, rows)
+  mGrid, changes_mat = binarytree.createMaze(1, 1, columns, rows)
   -- mGrid, changes_mat = sidewinder.createMaze(1, 1, columns, rows)
   -- mGrid, changes_mat = huntandkill.createMaze(1, 1, columns, rows)
   -- mGrid, changes_mat = backtracking.createMaze(1, 1, columns, rows)
   -- mGrid, changes_mat = aldous_broder.createMaze(1, 1, columns, rows)
-  mGrid, changes_mat = wilson.createMaze(1, 1, columns, rows)
+  -- mGrid, changes_mat = wilson.createMaze(1, 1, columns, rows)
   -- mGrid, changes_mat = prim.createMaze(1, 1, columns, rows)
   -- mGrid, changes_mat = kruskal.createMaze(1, 1, columns, rows)
   -- mGrid, changes_mat = eller.createMaze(1, 1, columns, rows)
@@ -167,10 +167,11 @@ function love.load(arg)
   --  print()
   -- end
 
-  -- createPNG()
+  createPNG()
   -- isColored = true
+  -- mGrid, changes_mat = binarytree.createMaze(1, 1, columns, rows)
   -- createPNG()
-  -- love.event.quit()
+  love.event.quit()
   
   -- recursivedivision.createAliensWritings(mGrid, 0, 0, columns-1, rows-1)
 end

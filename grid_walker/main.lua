@@ -21,7 +21,7 @@ local function vertfromwalls(x, y, t)
 	local vert = {}
 
 	if t.bottom_wall == true then vert.bottom_wall = {x, y+h, x+w, y+h} end
-	if  t.right_wall == true then vert.right_wall = {x-1+w, y, x-1+w, y+h} end -- -1 is for fixing weird pixels out of the walls
+	if t.right_wall == true then vert.right_wall = {x-1+w, y, x-1+w, y+h} end -- -1 is for fixing weird pixels out of the walls
 
 	return vert
 end
@@ -40,11 +40,12 @@ local function createPNG()
 				love.graphics.setColor(255, 0, 0, 70)
 				love.graphics.rectangle("fill", ox+(w*(x-1)), oy+(h*(y-1)), w, h) 
 			end
-			-- if point then
-			-- 	love.graphics.setColor(0, 255, 0, 10) 
-			-- 	-- love.graphics.rectangle("fill", ox+(1/4*w+w*(x-1)), oy+(1/4*h+h*(y-1)), w/2, h/2) 
-			-- 	love.graphics.rectangle("fill", ox+(w*(cursor.posx-1)), oy+(h*(cursor.posy-1)), w, h)
-			-- end
+
+			if point then
+				love.graphics.setColor(0, 255, 0, 10) 
+				-- love.graphics.rectangle("fill", ox+(1/4*w+w*(x-1)), oy+(1/4*h+h*(y-1)), w/2, h/2) 
+				love.graphics.rectangle("fill", ox+(w*(cursor.posx-1)), oy+(h*(cursor.posy-1)), w, h)
+			end
 
 			for k, v in pairs ( vertfromwalls(ox+(w*(x-1)), oy+(h*(y-1)), grid[y][x]) ) do
 				local r, g, b = 0, 0, 0

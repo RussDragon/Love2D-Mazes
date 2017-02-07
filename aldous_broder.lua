@@ -22,16 +22,16 @@ function aux.createGrid (rows, columns)
 	return MazeGrid
 end
 
-local function saveGridState()
-	local temp = {}
-	for yk, yv in pairs(aux.grid) do
-		temp[yk] = {}
-		for xk, xv in pairs(yv) do 
-			temp[yk][xk] = {bottom_wall = aux.grid[yk][xk].bottom_wall, right_wall = aux.grid[yk][xk].right_wall} -- , point = aux.grid[yk][xk].point}
-		end
-	end
-	return temp
-end
+-- local function saveGridState()
+-- 	local temp = {}
+-- 	for yk, yv in pairs(aux.grid) do
+-- 		temp[yk] = {}
+-- 		for xk, xv in pairs(yv) do 
+-- 			temp[yk][xk] = {bottom_wall = aux.grid[yk][xk].bottom_wall, right_wall = aux.grid[yk][xk].right_wall} -- , point = aux.grid[yk][xk].point}
+-- 		end
+-- 	end
+-- 	return temp
+-- end
 
 function mod.createMaze(x1, y1, x2, y2, grid)
 	aux.width, aux.height, aux.sx, aux.sy = x2, y2, x1, y1
@@ -51,62 +51,44 @@ function aux.aldous_broder()
 	while unvisited_cells ~= 0 do
 		local dir = aux.dirs[math.random(1, 4)]
 
-		-- for yk, yv in pairs(aux.grid) do
-		-- 	for xk, xv in pairs(yv) do
-		-- 	if xv.visited then io.write("1 ")
-		-- 	else io.write("0 ") end
-		-- 	end
-		-- 	print()
-		-- end
-		-- print()
-
-		-- aux.grid[iy][ix].point = true
-		-- table.insert(aux.changes, saveGridState())
-
-		if dir == "UP" then -- UP
+		if dir == "UP" then
 			if iy-1 >= aux.sy then
 				if aux.grid[iy-1][ix].visited == false then
 					aux.grid[iy-1][ix].bottom_wall = false
 					aux.grid[iy-1][ix].visited = true 
 					unvisited_cells = unvisited_cells - 1 
 				end
-				-- aux.grid[iy][ix].point = false
 				iy = iy-1
 			end
-		elseif dir == "DOWN" then -- DOWN 
+		elseif dir == "DOWN" then
 			if iy+1 <= aux.height then 
 				if aux.grid[iy+1][ix].visited == false then 
 					aux.grid[iy][ix].bottom_wall = false 
 					aux.grid[iy+1][ix].visited = true
 					unvisited_cells = unvisited_cells - 1 
 				end
-				-- aux.grid[iy][ix].point = false
 				iy = iy+1
 			end
-		elseif dir == "RIGHT" then -- RIGHT
+		elseif dir == "RIGHT" then
 			if ix+1 <= aux.width then
 				if aux.grid[iy][ix+1].visited == false then 
 					aux.grid[iy][ix].right_wall = false
 					aux.grid[iy][ix+1].visited = true
 					unvisited_cells = unvisited_cells - 1 
 				end
-				-- aux.grid[iy][ix].point = false
 				ix = ix+1
 			end
-		elseif dir == "LEFT" then -- LEFT
+		elseif dir == "LEFT" then
 			if ix-1 >= aux.sx then
 				if aux.grid[iy][ix-1].visited == false then
 					aux.grid[iy][ix-1].right_wall = false
 					aux.grid[iy][ix-1].visited = true
 					unvisited_cells = unvisited_cells - 1 
 				end
-				-- aux.grid[iy][ix].point = false
 				ix = ix-1
 			end
 		end
 	end
-	-- aux.grid[iy][ix].point = true
-	-- table.insert(aux.changes, saveGridState())
 end
 
 return mod
